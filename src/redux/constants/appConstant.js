@@ -1,0 +1,4 @@
+export const FETCH_DATA_START = 'FETCH_DATA_START';
+export const FETCH_DATA_FINISHED = 'FETCH_DATA_FINISHED';
+
+

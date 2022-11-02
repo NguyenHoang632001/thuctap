@@ -1,7 +1,7 @@
-import Header from "./Header";
+import Header from "../../../src/layouts/DefaultLayout/Header";
 import SideBar from "./SideBar";
 
-function DefaultLayout({ children }) {
+function DefaultPostmanLayout({ children }) {
   return (
     <div className="w-full min-h-screen bg-[#eee]  z-[0] relative">
       <Header />
@@ -13,4 +13,4 @@ function DefaultLayout({ children }) {
   );
 }
 
-export default DefaultLayout;
+export default DefaultPostmanLayout;

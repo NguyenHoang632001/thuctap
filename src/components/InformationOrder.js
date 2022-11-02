@@ -32,7 +32,7 @@ function InformationOrder({ ...props }) {
     setIsOpen(false);
   }
   return (
-    <div className="overflow-x-auto relative">
+    <div className="overflow-x-auto">
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
@@ -56,7 +56,6 @@ function InformationOrder({ ...props }) {
         <tbody>
           {props.data.rows &&
             props.data.rows.map((item, index) => {
-              console.log(item);
               return (
                 <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                   <td className="py-4 px-6">
@@ -76,7 +75,7 @@ function InformationOrder({ ...props }) {
                     {item.price ? item.price : "trống"}
                   </td>
 
-                  <div>
+                  <td>
                     <button onClick={openModal}> Xem chi tiết</button>
                     <Modal
                       isOpen={modalIsOpen}
@@ -120,7 +119,7 @@ function InformationOrder({ ...props }) {
                         <div className="mt-[20px]">Giá: {item.price}</div>
                       </div>
                     </Modal>
-                  </div>
+                  </td>
                 </tr>
               );
             })}

@@ -10,7 +10,7 @@ function Header() {
   const navigate = useNavigate();
   const id = useSelector((state) => state.user.userInfo.id);
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
-  console.log(id);
+
   const dispatch = useDispatch();
   const handleOnchangInput = (e) => {
     setSearchInput(e.target.value);
@@ -19,8 +19,9 @@ function Header() {
     setSearchInput("");
     searchInputRef.current.focus();
   };
-  const handleOnclick = () => {
-    dispatch(handleUserLogout(id));
+  const handleOnclick = async () => {
+    await dispatch(handleUserLogout(id));
+    navigate("../login", { replace: true });
   };
   useEffect(() => {
     if (isLoggedIn == false) {

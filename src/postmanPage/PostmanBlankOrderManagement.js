@@ -10,7 +10,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useSelector } from "react-redux";
 import InformationOrder from "../components/InformationOrder";
 
-function BlanketOrderManagement() {
+function PostmanBlankOrderManagement() {
   const [status, setStatus] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [currentStatus, setCurrentStatus] = useState("WAIT");
@@ -29,6 +29,7 @@ function BlanketOrderManagement() {
     const data = await getAction("STATUS");
     setStatus(data);
   };
+
   const data = status ? status.data : [];
 
   const [active, setActive] = useState(0);
@@ -63,7 +64,7 @@ function BlanketOrderManagement() {
     }
     return pageArr;
   };
-
+  console.log("data", data);
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 ">
       <h2 className="text-xl">QUẢN LÍ VẬN ĐƠN</h2>
@@ -131,7 +132,9 @@ function BlanketOrderManagement() {
                     : ""
                 }
               >
-                <div className="hover:cursor-pointer">{action.value}</div>
+                <div className="hover:cursor-pointer" key={index}>
+                  {action.value}
+                </div>
               </div>
             );
           })}
@@ -171,4 +174,4 @@ function BlanketOrderManagement() {
   );
 }
 
-export default BlanketOrderManagement;
+export default PostmanBlankOrderManagement;

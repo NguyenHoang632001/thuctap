@@ -8,8 +8,23 @@ import CreateExcel from "../page/CreateExcel";
 import BlanketOrderManagement from "../page/BlanketOrderManagement";
 import Statistical from "../page/Statistical";
 import DetailOrder from "../page/DetailOrder";
+import PostmanBlankOrderManagement from "../postmanPage/PostmanBlankOrderManagement";
 
+const userRoutes = [
+  { path: "/about", component: About },
+  { path: "/", component: HomePage },
+  { path: "/create-single", component: CreateSingle },
+  { path: "/create-excel", component: CreateExcel },
+  { path: "/blanket-order-management", component: BlanketOrderManagement },
+  { path: "/statistical", component: Statistical },
+  { path: "/detail-order", component: DetailOrder },
+];
 const publicRoutes = [
+  { path: "/login", component: LoginPage, deafaultLayout: null },
+  { path: "/signup", component: SignUp, deafaultLayout: null },
+  { path: "/siginbyotp", component: SiginByOTP, deafaultLayout: null },
+];
+const adminRoutes = [
   { path: "/about", component: About },
   { path: "/", component: HomePage },
   { path: "/login", component: LoginPage, deafaultLayout: null },
@@ -21,4 +36,10 @@ const publicRoutes = [
   { path: "/statistical", component: Statistical },
   { path: "/detail-order", component: DetailOrder },
 ];
-export { publicRoutes };
+const postmanRoutes = [
+  { path: "/", component: HomePage },
+  { path: "/blanket-order-management", component: PostmanBlankOrderManagement },
+  { path: "/statistical", component: Statistical },
+];
+
+export { publicRoutes, postmanRoutes, adminRoutes, userRoutes };

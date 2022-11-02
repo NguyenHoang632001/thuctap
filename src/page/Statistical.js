@@ -14,6 +14,27 @@ function Statistical() {
   const emailUser = useSelector((state) => state.user.userInfo.email);
   const [arrChart, setArrChart] = useState("");
   const [arrToLoadTable, setArrToLoadTable] = useState([]);
+
+  let totalOrder = 0;
+  let totalPrice = 0;
+  let totalCollectMoney = 0;
+
+  arrToLoadTable.map((item, index) => {
+    totalOrder = totalOrder + item.length;
+
+    return totalOrder;
+  });
+  arrToLoadTable.map((item, index) => {
+    totalPrice = totalPrice + item.price;
+
+    return totalPrice;
+  });
+  arrToLoadTable.map((item, index) => {
+    totalCollectMoney = totalCollectMoney + item.collectMoney;
+
+    return totalCollectMoney;
+  });
+
   useEffect(() => {
     getDataChart();
   }, []);
@@ -106,8 +127,6 @@ function Statistical() {
 
   const [startDate, setStartDate] = useState(new Date());
 
-  console.log(arrChart.length);
-  console.log(dataChart);
   const data = {
     labels: [
       "Đã hủy",
@@ -153,11 +172,11 @@ function Statistical() {
       },
     ],
   };
+
   return (
     <div className="">
       <div className="flex justify-start items-center ml-8 ">
         {itemNav.map((item, index) => {
-          console.log(index);
           return (
             <div
               key={index}
@@ -195,13 +214,22 @@ function Statistical() {
       </div>
       <div className="flex justify-evenly items-center  h-[80px] mb-8">
         <div className="w-[200px] border-solid border-black border-[2px] p-8">
-          <span>Số lượng đơn hàng</span>
+          <div>Số lượng đơn hàng</div>
+          <div className="text-center mt-2 text-[green]">
+            {totalOrder} <span className="text-[black]">(đơn)</span>
+          </div>
         </div>
         <div className="w-[200px] border-solid border-black border-[2px] p-8">
-          <span>Tổng tiền thu hộ</span>
+          <div>Tổng tiền thu hộ</div>
+          <div className="text-center mt-2 text-[green]">
+            {totalCollectMoney} <span className="text-[black]">(VND)</span>
+          </div>
         </div>
         <div className="w-[200px] border-solid border-black border-[2px] p-8">
-          <span>Tổng tiền cước</span>
+          <div>Tổng tiền cước</div>
+          <div className="text-center mt-2 text-[green]">
+            {totalPrice} <span className="text-[black]">(VND)</span>
+          </div>
         </div>
       </div>
       <div className="w-full flex items-center justify-between mt-[100px]">
@@ -257,6 +285,8 @@ function Statistical() {
                   </thead>
                   <tbody>
                     {arrToLoadTable.map((item, index) => {
+                      const order = 0;
+
                       return (
                         <tr className=" border-b" key={index}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">

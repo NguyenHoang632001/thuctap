@@ -9,6 +9,8 @@ import BlanketOrderManagement from "../page/BlanketOrderManagement";
 import Statistical from "../page/Statistical";
 import DetailOrder from "../page/DetailOrder";
 import PostmanBlankOrderManagement from "../postmanPage/PostmanBlankOrderManagement";
+import OrderInStorage from "../postmanPage/OrderInStorage";
+import EstimatePrice from "../page/storagePage/EstimatePrice";
 
 const userRoutes = [
   { path: "/about", component: About },
@@ -40,6 +42,14 @@ const postmanRoutes = [
   { path: "/", component: HomePage },
   { path: "/blanket-order-management", component: PostmanBlankOrderManagement },
   { path: "/statistical", component: Statistical },
+  { path: "/order-in-storage", component: OrderInStorage },
+];
+const storageManager = [
+  { path: "/", component: HomePage },
+  { path: "/blanket-order-management", component: PostmanBlankOrderManagement },
+  { path: "/statistical", component: Statistical },
+  { path: "/order-in-storage", component: OrderInStorage },
+  { path: "/estimate-price", component: EstimatePrice },
 ];
 
-export { publicRoutes, postmanRoutes, adminRoutes, userRoutes };
+export { publicRoutes, postmanRoutes, adminRoutes, userRoutes, storageManager };

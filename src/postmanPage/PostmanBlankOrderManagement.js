@@ -8,7 +8,9 @@ import { getAction, getOder } from "../services/userService";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { useSelector } from "react-redux";
-import InformationOrder from "../components/InformationOrder";
+
+import PostmanInformationOrder from "./PostmanInformationOrder";
+import { getOderAll, getOderPostman } from "../postmanService/postmanService";
 
 function PostmanBlankOrderManagement() {
   const [status, setStatus] = useState("");
@@ -19,12 +21,18 @@ function PostmanBlankOrderManagement() {
   const [isLoadingPagination, setIsLoadingPagination] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [toggle, setToggle] = useState(false);
+  console.log("status", status);
   useEffect(() => {
     getaction();
   }, []);
   useEffect(() => {
-    oder();
-  }, [currentStatus, currentPage]);
+    if (currentStatus === "CREATE") {
+      order();
+    } else {
+      orderPostman();
+    }
+  }, [currentStatus, currentPage, toggle]);
   const getaction = async () => {
     const data = await getAction("STATUS");
     setStatus(data);
@@ -41,10 +49,23 @@ function PostmanBlankOrderManagement() {
   };
   const email = useSelector((state) => state.user.userInfo.email);
 
-  const oder = async () => {
+  const order = async () => {
     const pageSize = 8;
-    const orderData = await getOder(
-      "SENDER",
+    const orderData = await getOderAll(
+      currentPage,
+      pageSize,
+      1666656000,
+      currentStatus
+    );
+
+    setIsLoadingPagination(true);
+    setOrderData(orderData.data);
+    setTotalPages(Math.ceil(orderData.data.count / pageSize));
+  };
+
+  const orderPostman = async () => {
+    const pageSize = 8;
+    const orderData = await getOderPostman(
       currentPage,
       pageSize,
       1666656000,
@@ -64,7 +85,12 @@ function PostmanBlankOrderManagement() {
     }
     return pageArr;
   };
-  console.log("data", data);
+  const datafilter = data.filter((arr) => {
+    if (arr.person == "POSTMAN" && arr.keyMap !== "STORAGE") {
+      return arr;
+    }
+  });
+
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 ">
       <h2 className="text-xl">QUẢN LÍ VẬN ĐƠN</h2>
@@ -119,7 +145,7 @@ function PostmanBlankOrderManagement() {
         </div>
         <hr className="mt-4 h-[3px] w-full bg-red-700 "></hr>
         <div className="flex items-center justify-between mt-4">
-          {data.map((action, index) => {
+          {datafilter.map((action, index) => {
             return (
               <div
                 key={index}
@@ -142,23 +168,31 @@ function PostmanBlankOrderManagement() {
 
         {totalPages > 0 ? (
           <div>
-            <InformationOrder
+            <PostmanInformationOrder
               data={orderData}
-              className="relative "
-            ></InformationOrder>
-            <div className="showPage mt-[0] mb-[0] ml-[auto] mf-[auto] text-center">
+              status={currentStatus}
+              toggle={toggle}
+              setToggle={setToggle}
+            ></PostmanInformationOrder>
+            <div className="showPage mt-[20px] mb-[20px] ml-[auto] mf-[auto] text-center">
               <span>
                 Trang {currentPage}/{totalPages}
               </span>
             </div>
             {isLoadingPagination && (
-              <div className="buttonChangePage bg-black ">
+              <div className="buttonChangePage text-[center]">
                 <Pagination
                   pages={[...createPageArr(totalPages)]}
                   max={totalPages >= 10 ? 8 : totalPages}
                   value={currentPage}
                   onChange={(e, page) => setCurrentPage(page)}
-                  style={{ fontSize: "16px" }}
+                  style={{
+                    fontSize: "16px",
+                    display: "flex",
+
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                   className="text-center"
                 />
               </div>

@@ -1,7 +1,12 @@
 import React from "react";
+import { useEffect } from "react";
+import { useState } from "react";
 import ReactDOM from "react-dom";
 import Modal from "react-modal";
 import ReactPaginate from "react-paginate";
+import { useSelector } from "react-redux";
+import { updateOrderStatusService } from "../postmanService/postmanService";
+import { getInformationCommodity } from "../services/userService";
 
 const customStyles = {
   content: {
@@ -16,11 +21,14 @@ const customStyles = {
 Modal.setAppElement("#root");
 
 function InformationOrder({ ...props }) {
+  const [sellectedItem, setSellectedItem] = useState("");
   let subtitle;
   const [modalIsOpen, setIsOpen] = React.useState(false);
+  const [currentComodityArr, setCurrentCommodityArr] = useState([]);
 
-  function openModal() {
+  function openModal(item) {
     setIsOpen(true);
+    setSellectedItem(item);
   }
 
   function afterOpenModal() {
@@ -31,6 +39,53 @@ function InformationOrder({ ...props }) {
   function closeModal() {
     setIsOpen(false);
   }
+
+  useEffect(() => {
+    if (sellectedItem.senderEmail && sellectedItem.orderCode) {
+      getCommodity();
+    }
+  }, [sellectedItem.senderEmail, sellectedItem.orderCode]);
+  const getCommodity = async () => {
+    const data = await getInformationCommodity(
+      sellectedItem.senderEmail,
+      sellectedItem.orderCode
+    );
+    if (data && data.errCode === 0) {
+      setCurrentCommodityArr(data.data);
+    }
+  };
+
+  const handleToCancle = (item) => {
+    updateOrder(item);
+  };
+  const verifierEmail = useSelector((state) => state.user.userInfo.email);
+
+  const updateOrder = async (item) => {
+    let id = item.id;
+    let collectMoney = item.collectMoney;
+    let price = "0";
+    let statusId = "";
+    switch (props.currentStatus) {
+      case "CREATE":
+        statusId = "CANCLE";
+        break;
+
+      default:
+        break;
+    }
+
+    let data = await updateOrderStatusService({
+      id,
+      statusId: "CANCLE",
+      verifierEmail,
+      collectMoney,
+      price,
+    });
+    if (data && data.errCode === 0) {
+      props.setToggle(!props.toggle);
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -57,7 +112,10 @@ function InformationOrder({ ...props }) {
           {props.data.rows &&
             props.data.rows.map((item, index) => {
               return (
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <tr
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                  key={index}
+                >
                   <td className="py-4 px-6">
                     {item.orderCode ? item.orderCode : "trống"}
                   </td>
@@ -76,7 +134,24 @@ function InformationOrder({ ...props }) {
                   </td>
 
                   <td>
-                    <button onClick={openModal}> Xem chi tiết</button>
+                    <button onClick={() => openModal(item)}>
+                      {" "}
+                      Xem chi tiết
+                    </button>
+                    {props.currentStatus === "CREATE" ? (
+                      <button
+                        className="ml-[10px]"
+                        onClick={() => {
+                          handleToCancle(item);
+                        }}
+                      >
+                        {" "}
+                        Hủy đơn
+                      </button>
+                    ) : (
+                      <span></span>
+                    )}
+
                     <Modal
                       isOpen={modalIsOpen}
                       onAfterOpen={afterOpenModal}
@@ -95,28 +170,45 @@ function InformationOrder({ ...props }) {
                       </div>
                       <div className="mt-[20px]">
                         <div className="mt-[20px]">
-                          Mã đơn hàng {item.orderCode}
+                          Mã đơn hàng {sellectedItem && sellectedItem.orderCode}
                         </div>
 
                         <div className="mt-[20px]">
-                          Người gửi: {item.senderEmail}
+                          Người gửi:{" "}
+                          {sellectedItem && sellectedItem.senderEmail}
                         </div>
                         <div className="mt-[20px]">
-                          Người nhận: {item.fullName}
+                          Người nhận: {sellectedItem && sellectedItem.fullName}
+                        </div>
+                        {/* <div className="mt-[20px]">
+                          Email người nhận:{" "}
+                          {sellectedItem && sellectedItem.receiverEmail}
+                        </div> */}
+
+                        <div className="mt-[20px]">
+                          Địa chỉ người nhận:{" "}
+                          {sellectedItem && sellectedItem.address}
+                        </div>
+
+                        <div className="mt-[20px]">
+                          Thu hộ: {sellectedItem && sellectedItem.collectMoney}
                         </div>
                         <div className="mt-[20px]">
-                          Email người nhận: {item.receiverEmail}
+                          Tiền Cước Phí: 20.000 VND
                         </div>
-                        <div className="mt-[20px]">
-                          Địa chỉ người nhận {item.address}
-                        </div>
-                        <div className="mt-[20px]">
-                          Nơi nhận hàng:{item.receivePlace}
-                        </div>
-                        <div className="mt-[20px]">
-                          Thu hộ: {item.collectMoney}
-                        </div>
-                        <div className="mt-[20px]">Giá: {item.price}</div>
+                        <h2 className="text-[red]">Thông tin mỗi đơn hàng </h2>
+                        {currentComodityArr.map((item, index) => {
+                          return (
+                            <div className="mt-[20px]" key={index}>
+                              <h3>
+                                Tên hàng {index}: {item.name}
+                              </h3>
+                              <h3>Trọng lượng đơn hàng : {item.weight}</h3>
+                              <h3>Số lượng đơn hàng : {item.amount}</h3>
+                              <h3>Giá trị đơn hàng : {item.value}</h3>
+                            </div>
+                          );
+                        })}
                       </div>
                     </Modal>
                   </td>

@@ -21,7 +21,7 @@ export const getOder = async (page, size, date, statusId, email) => {
 export const getOderAll = async (page, size, date, statusId) => {
   try {
     let res = await axios.get(
-      `/api/get-order?&page=${page}&size=${size}&date=${date}&statusId=${statusId}`
+      `/api/get-order-storage?&page=${page}&size=${size}&date=${date}&statusId=${statusId}`
     );
     return res;
   } catch (error) {
@@ -51,6 +51,16 @@ export const getOrderByStorage = async (page, size, storageId) => {
   try {
     let res = await axios.get(
       `/api/get-order-by-storage?page=${page}&size=${size}&storageId=${storageId}`
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getChartPostman = async (email, date) => {
+  try {
+    let res = await axios.get(
+      `/api/get-chart-data-postman?verifierEmail=${email}&date=${date}`
     );
     return res;
   } catch (error) {

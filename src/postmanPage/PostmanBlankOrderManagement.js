@@ -48,13 +48,14 @@ function PostmanBlankOrderManagement() {
     setCurrentStatus(statusId);
   };
   const email = useSelector((state) => state.user.userInfo.email);
+  const date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
 
   const order = async () => {
     const pageSize = 8;
     const orderData = await getOderAll(
       currentPage,
       pageSize,
-      1666656000,
+      date,
       currentStatus
     );
 
@@ -68,7 +69,7 @@ function PostmanBlankOrderManagement() {
     const orderData = await getOderPostman(
       currentPage,
       pageSize,
-      1666656000,
+      date,
       currentStatus,
       email
     );
@@ -103,7 +104,7 @@ function PostmanBlankOrderManagement() {
             ></input>
             <FontAwesomeIcon icon={faSearch} className=" ml-[10px]" />
           </div>
-          <div className="flex items-center justify-between border-[1px] border-black w-[150px] h-[30px]">
+          {/* <div className="flex items-center justify-between border-[1px] border-black w-[150px] h-[30px]">
             <FontAwesomeIcon
               icon={faCalendarDays}
               className="text-orange-500 mr-2"
@@ -116,13 +117,12 @@ function PostmanBlankOrderManagement() {
               }}
               className="decoration-emerald-300 border-[1px] border-black w-[150px] h-[30px]"
             />
-          </div>
-          <div>
+          </div> */}
+          {/* <div>
             <select className=" border-[1px] border-black w-[150px] h-[30px]">
               <option>Tất cả kho hàng</option>
-              <option>{/* <input></input> */}</option>
             </select>
-          </div>
+          </div> */}
           <div>
             <select className=" border-[1px] border-black w-[150px] h-[30px]">
               <option>Người trả cước</option>

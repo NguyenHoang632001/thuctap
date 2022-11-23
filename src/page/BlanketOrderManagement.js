@@ -9,26 +9,34 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { useSelector } from "react-redux";
 import InformationOrder from "../components/InformationOrder";
+import { Link } from "react-router-dom";
 
 function BlanketOrderManagement() {
   const [status, setStatus] = useState("");
   const [startDate, setStartDate] = useState(new Date());
-  const [currentStatus, setCurrentStatus] = useState("WAIT");
+  const [currentStatus, setCurrentStatus] = useState("");
 
   const [orderData, setOrderData] = useState([]);
   const [isLoadingPagination, setIsLoadingPagination] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [toggle, setToggle] = useState(false);
   useEffect(() => {
     getaction();
   }, []);
   useEffect(() => {
-    oder();
-  }, [currentStatus, currentPage]);
+    if (currentStatus) {
+      oder();
+    }
+  }, [currentStatus, currentPage, startDate, toggle]);
   const getaction = async () => {
     const data = await getAction("STATUS");
-    setStatus(data);
+    if (data && data.errCode === 0) {
+      setStatus(data);
+      setCurrentStatus(data.data[0] && data.data[0].keyMap);
+    }
   };
+  console.log(currentStatus);
   const data = status ? status.data : [];
 
   const [active, setActive] = useState(0);
@@ -41,12 +49,13 @@ function BlanketOrderManagement() {
   const email = useSelector((state) => state.user.userInfo.email);
 
   const oder = async () => {
+    const date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
     const pageSize = 8;
     const orderData = await getOder(
       "SENDER",
       currentPage,
       pageSize,
-      1666656000,
+      date,
       currentStatus,
       email
     );
@@ -63,7 +72,7 @@ function BlanketOrderManagement() {
     }
     return pageArr;
   };
-
+  console.log("toggle", toggle);
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 ">
       <h2 className="text-xl">QUẢN LÍ VẬN ĐƠN</h2>
@@ -112,9 +121,15 @@ function BlanketOrderManagement() {
           <button className="border-[1px] border-black  w-[150px] h-[30px] mr-4">
             Xuất Excel
           </button>
-          <button className="border-[1px] border-black w-[150px] h-[30px] mr-4">
+          {/* <button className="border-[1px] border-black w-[150px] h-[30px] mr-4">
             Nhập Excel
-          </button>
+          </button> */}
+          <Link
+            to="/create-excel"
+            className="border-[1px] border-black w-[150px] h-[30px] mr-4"
+          >
+            Nhập Excel
+          </Link>
         </div>
         <hr className="mt-4 h-[3px] w-full bg-red-700 "></hr>
         <div className="flex items-center justify-between mt-4">
@@ -141,7 +156,10 @@ function BlanketOrderManagement() {
           <div>
             <InformationOrder
               data={orderData}
-              className="relative "
+              currentStatus={currentStatus}
+              toggle={toggle}
+              setToggle={setToggle}
+              className="relative"
             ></InformationOrder>
             <div className="showPage mt-[0] mb-[0] ml-[auto] mf-[auto] text-center">
               <span>

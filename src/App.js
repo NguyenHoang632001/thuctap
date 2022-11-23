@@ -1,5 +1,6 @@
 import { Provider, useSelector } from "react-redux";
 import { Route, Routes } from "react-router-dom";
+import DefaultAdminLayout from "./layouts/AdminLayout/DefaultAdminLayout";
 import DefaultLayout from "./layouts/DefaultLayout/DefaultLayout";
 import DefaultPostmanLayout from "./layouts/PostmanLayout/DefaultPostmanLayout";
 import DefaultStorageLayout from "./layouts/storageLayout/DefaultStorageLayout";
@@ -66,9 +67,9 @@ function App() {
                   key={index}
                   path={route.path}
                   element={
-                    <DefaultLayout>
+                    <DefaultAdminLayout>
                       <Page />
-                    </DefaultLayout>
+                    </DefaultAdminLayout>
                   }
                 />
               );

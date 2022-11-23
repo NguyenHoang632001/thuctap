@@ -50,9 +50,11 @@ export const getAction = async (type) => {
     console.log(error);
   }
 };
-export const getChart = async (email) => {
+export const getChart = async (email, date) => {
   try {
-    let res = await axios.get(`/api/get-chart-data?senderEmail=${email}`);
+    let res = await axios.get(
+      `/api/get-chart-data?senderEmail=${email}&date=${date}`
+    );
     return res;
   } catch (error) {
     console.log(error);
@@ -70,6 +72,24 @@ export const getOder = async (type, page, size, date, statusId, email) => {
   try {
     let res = await axios.get(
       `/api/get-order-by-status?type=${type}&page=${page}&size=${size}&date=${date}&statusId=${statusId}&email=${email}`
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const bulkCreateOrderService = async (data) => {
+  try {
+    let res = await axios.post(`/api/bulk-create-order`, data);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getInformationCommodity = async (senderEmail, orderCode) => {
+  try {
+    let res = await axios.get(
+      `/api/get-commodity?senderEmail=${senderEmail}&orderCode=${orderCode}`
     );
     return res;
   } catch (error) {

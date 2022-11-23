@@ -5,6 +5,7 @@ import Modal from "react-modal";
 import ReactPaginate from "react-paginate";
 import { useSelector } from "react-redux";
 import { updateOrderStatusService } from "../postmanService/postmanService";
+import { getInformationCommodity } from "../services/userService";
 
 const customStyles = {
   content: {
@@ -20,12 +21,16 @@ Modal.setAppElement("#root");
 
 function PostmanInformationOrder({ ...props }) {
   const [currentStatus, setCurrentStatus] = useState(props.status);
+  const [currentComodityArr, setCurrentCommodityArr] = useState([]);
+  const [sellectedItem, setSellectedItem] = useState("");
+  console.log(props.status);
 
   let subtitle;
   const [modalIsOpen, setIsOpen] = React.useState(false);
 
-  function openModal() {
+  function openModal(item) {
     setIsOpen(true);
+    setSellectedItem(item);
   }
 
   function afterOpenModal() {
@@ -35,15 +40,22 @@ function PostmanInformationOrder({ ...props }) {
 
   function closeModal() {
     setIsOpen(false);
+    getCommodity();
   }
 
   const verifierEmail = useSelector((state) => {
     return state.user.userInfo.email;
   });
-
-  const updateOrder = async (id) => {
-    let statusId = "WAITE";
+  console.log("currentStatus", currentStatus);
+  const updateOrder = async (item) => {
+    let id = item.id;
+    let collectMoney = item.collectMoney;
+    let price = item.price;
+    let statusId = "";
     switch (currentStatus) {
+      case "CREATE":
+        statusId = "WAIT";
+        break;
       case "WAIT":
         statusId = "TOOK";
         break;
@@ -69,14 +81,24 @@ function PostmanInformationOrder({ ...props }) {
       default:
         break;
     }
-    let data = await updateOrderStatusService({ id, statusId, verifierEmail });
+    console.log("statusId", statusId);
+    let data = await updateOrderStatusService({
+      id,
+      statusId,
+      verifierEmail,
+      collectMoney,
+      price: "20",
+    });
     if (data && data.errCode === 0) {
       props.setToggle(!props.toggle);
     }
   };
   const destroyOrder = async (id) => {
-    let statusId = "WAITE";
+    let statusId = "";
     switch (currentStatus) {
+      case "CREATE":
+        statusId = "WAIT";
+        break;
       case "WAIT":
         statusId = "TOOK";
         break;
@@ -102,17 +124,33 @@ function PostmanInformationOrder({ ...props }) {
       default:
         break;
     }
-    let data = await updateOrderStatusService({ id, statusId, verifierEmail });
+    let data = await updateOrderStatusService({
+      id,
+      statusId,
+      verifierEmail,
+    });
     if (data && data.errCode === 0) {
       props.setToggle(!props.toggle);
     }
   };
-  const hanleUpdateOrder = (id) => {
-    updateOrder(id);
+  const hanleUpdateOrder = (item) => {
+    updateOrder(item);
   };
   const handleToDestroy = (id) => {
     destroyOrder(id);
   };
+  const getCommodity = async () => {
+    const data = await getInformationCommodity(
+      sellectedItem.senderEmail,
+      sellectedItem.orderCode
+    );
+    // sellectedItem.senderEmail,
+    // sellectedItem.orderCode
+    if (data && data.errCode === 0) {
+      setCurrentCommodityArr(data.data);
+    }
+  };
+  console.log("sellectedItem,sellectedItem", currentComodityArr);
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -165,25 +203,17 @@ function PostmanInformationOrder({ ...props }) {
 
                   <td>
                     <button
-                      onClick={openModal}
+                      onClick={() => openModal(item)}
                       className="ml-2 border-black border-solid border-[1px] p-1"
                     >
                       {" "}
                       Xem chi tiết
                     </button>
-                    {/* <button
-                      className="ml-2 border-black border-solid border-[1px] p-1"
-                      onClick={() => {
-                        handleToDestroy(item.id);
-                      }}
-                    >
-                      {" "}
-                      Hủy
-                    </button> */}
+
                     {currentStatus == "WAIT" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -191,7 +221,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "TRANSPORT" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -199,7 +229,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "DELIVERY" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -207,7 +237,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "CREATE" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -215,7 +245,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "FURTHER_TRANSFER" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -223,7 +253,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "CONTINUE" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -231,7 +261,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "STORAGE" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -239,7 +269,7 @@ function PostmanInformationOrder({ ...props }) {
                     {currentStatus == "CONTINUE" && (
                       <button
                         className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => hanleUpdateOrder(item.id)}
+                        onClick={() => hanleUpdateOrder(item)}
                       >
                         Xác nhận
                       </button>
@@ -272,19 +302,37 @@ function PostmanInformationOrder({ ...props }) {
                         <div className="mt-[20px]">
                           Người nhận: {item.fullName}
                         </div>
-                        <div className="mt-[20px]">
+                        {/* <div className="mt-[20px]">
                           Email người nhận: {item.receiverEmail}
-                        </div>
+                        </div> */}
                         <div className="mt-[20px]">
                           Địa chỉ người nhận {item.address}
                         </div>
                         <div className="mt-[20px]">
-                          Nơi nhận hàng:{item.receivePlace}
+                          Số điện thoại người Nhận {item.phoneNumber}
                         </div>
+                        {/* <div className="mt-[20px]">
+                          Nơi nhận hàng:{item.receivePlace}
+                        </div> */}
                         <div className="mt-[20px]">
                           Thu hộ: {item.collectMoney}
                         </div>
-                        <div className="mt-[20px]">Giá: {item.price}</div>
+                        <h2 className="text-[red]">
+                          Thông tin thành phần đơn hàng
+                        </h2>
+                        {currentComodityArr.map((item, index) => {
+                          return (
+                            <div className="mt-[20px]" key={index}>
+                              <h3>
+                                Tên hàng {index}: {item.name}
+                              </h3>
+                              <h3>Trọng lượng đơn hàng : {item.weight}</h3>
+                              <h3>Số lượng đơn hàng : {item.amount}</h3>
+                              <h3>Giá trị đơn hàng : {item.value}</h3>
+                            </div>
+                          );
+                        })}
+                        {/* <div className="mt-[20px]">Giá: {item.price}</div> */}
                       </div>
                     </Modal>
                   </td>

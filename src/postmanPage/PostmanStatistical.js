@@ -6,15 +6,16 @@ import "react-datepicker/dist/react-datepicker.css";
 import { getChart } from "../services/userService";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { getChartPostman } from "../postmanService/postmanService";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-function Statistical() {
+function PostmanStatistical() {
   const [dataChart, setDataChart] = useState("");
   const emailUser = useSelector((state) => state.user.userInfo.email);
   const [arrChart, setArrChart] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
   const [arrToLoadTable, setArrToLoadTable] = useState([]);
+  const [startDate, setStartDate] = useState(new Date());
 
   let totalOrder = 0;
   let totalPrice = 0;
@@ -37,85 +38,32 @@ function Statistical() {
   });
 
   useEffect(() => {
-    getDataChart();
+    if (startDate) {
+      getDataChart();
+    }
   }, [startDate]);
   const getDataChart = async () => {
-    let date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
-    const data = await getChart(emailUser, date);
-    console.log("sdfsadafusser", data);
+    const data = await getChartPostman(
+      emailUser,
+      new Date(startDate).setHours(0, 0, 0, 0) / 1000
+    );
+
     setDataChart(data);
-    setArrChart([
-      data.cancelled.length,
-      data.continu.length,
-      data.create.length,
-      data.delivery.length,
-      data.furtherTransfer.length,
-      data.handling.length,
-      data.refundApproved.length,
-      data.successDelivery.length,
-      data.transporting.length,
-      data.wait.length,
-    ]);
+    setArrChart([data.successfullDelivery.length, data.took.length]);
+
     setArrToLoadTable([
       {
-        title: "Đã hủy",
-        length: data.cancelled.length,
-        collectMoney: data.cancelled.collectMoney,
-        price: data.cancelled.price,
+        title: "Đã lấy",
+        length: data.took.length,
+        collectMoney: data.took.collectMoney,
+        price: data.took.price,
       },
-      {
-        title: "Phát tiếp",
-        length: data.continu.length,
-        collectMoney: data.continu.collectMoney,
-        price: data.continu.price,
-      },
-      {
-        title: "Tạo mới",
-        length: data.create.length,
-        collectMoney: data.create.collectMoney,
-        price: data.create.price,
-      },
-      {
-        title: "Đang giao",
-        length: data.delivery.length,
-        collectMoney: data.delivery.collectMoney,
-        price: data.delivery.price,
-      },
-      {
-        title: "Đang chuyển hoàn",
-        length: data.furtherTransfer.length,
-        collectMoney: data.furtherTransfer.collectMoney,
-        price: data.furtherTransfer.price,
-      },
-      {
-        title: "Đang xử lí",
-        length: data.handling.length,
-        collectMoney: data.handling.collectMoney,
-        price: data.handling.price,
-      },
-      {
-        title: "Đã duyệt hoàn",
-        length: data.refundApproved.length,
-        collectMoney: data.refundApproved.collectMoney,
-        price: data.refundApproved.price,
-      },
+
       {
         title: "Giao thành công",
-        length: data.successDelivery.length,
-        collectMoney: data.successDelivery.collectMoney,
-        price: data.successDelivery.price,
-      },
-      {
-        title: "Đang vận chuyển",
-        length: data.transporting.length,
-        collectMoney: data.transporting.collectMoney,
-        price: data.transporting.price,
-      },
-      {
-        title: "Chờ lấy",
-        length: data.wait.length,
-        collectMoney: data.wait.collectMoney,
-        price: data.wait.price,
+        length: data.successfullDelivery.length,
+        collectMoney: data.successfullDelivery.collectMoney,
+        price: data.successfullDelivery.price,
       },
     ]);
   };
@@ -129,51 +77,18 @@ function Statistical() {
   };
 
   const data = {
-    labels: [
-      "Đã hủy",
-      "Phát tiếp",
-      "Tạo mới",
-      "Đang giao",
-      "Đang chuyển hoàn",
-      "Đang xử lí",
-      "Đã duyệt hoàn",
-      "Giao thành công",
-      "Đang vận chuyển",
-      "Chờ lấy",
-    ],
+    labels: ["Đã lấy", "Giao thành công"],
     datasets: [
       {
         label: "# of Votes",
         data: arrChart,
-        backgroundColor: [
-          "rgba(0, 0, 0, 1);",
-          " rgba(24, 65, 0, 1)",
-          "rgba(96, 65, 0, 1)",
-          "rgba(96, 65, 97, 1)",
-          "rgba(96, 129, 97, 1)",
-          "rgba(152, 129, 97, 1)",
-          " rgba(226, 129, 97, 1)",
-          "rgba(226, 231, 97, 1",
-          "rgba(226, 41, 230, 1)",
-          "rgba(16, 41, 230, 1)",
-        ],
-        borderColor: [
-          "rgba(0, 0, 0, 1);",
-          "rgba(24, 65, 0, 1)",
-          "rgba(96, 65, 0, 1)",
-          "rgba(96, 65, 97, 1)",
-          "rgba(96, 129, 97, 1)",
-          "rgba(152, 129, 97, 1)",
-          " rgba(226, 129, 97, 1)",
-          "rgba(226, 231, 97, 1",
-          "rgba(226, 41, 230, 1)",
-          "rgba(16, 41, 230, 1)",
-        ],
+        backgroundColor: ["rgba(0, 0, 0, 1);", " rgba(24, 65, 0, 1)"],
+        borderColor: ["rgba(0, 0, 0, 1);", "rgba(24, 65, 0, 1)"],
         borderWidth: 1,
       },
     ],
   };
-
+  console.log("1231321313", startDate);
   return (
     <div className="">
       <div className="flex justify-start items-center ml-8 ">
@@ -205,10 +120,9 @@ function Statistical() {
           </select>
           <DatePicker
             selected={startDate}
-            onSelect={new Date()} //when day is clicked
             onChange={(date) => {
               setStartDate(date);
-            }}
+            }} //when day is clicked
             className="decoration-emerald-300 border-[1px] border-black w-[150px] ml-[20px] h-8 "
           />
         </div>
@@ -286,7 +200,7 @@ function Statistical() {
                   </thead>
                   <tbody>
                     {arrToLoadTable.map((item, index) => {
-                      const order = 0;
+                      //   const order = 0;
 
                       return (
                         <tr className=" border-b" key={index}>
@@ -316,4 +230,4 @@ function Statistical() {
   );
 }
 
-export default Statistical;
+export default PostmanStatistical;

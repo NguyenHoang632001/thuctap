@@ -24,6 +24,7 @@ function CreateSingleBody() {
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
   const emailUser = useSelector((state) => state.user.userInfo.email);
+  const [collectMoney, setCollectMoney] = useState(0);
 
   const data = {
     senderEmail: emailUser,
@@ -33,6 +34,7 @@ function CreateSingleBody() {
     date: new Date().setHours(0, 0, 0, 0) / 1000,
     orderCode: codeMommodity,
     commodities: product,
+    collectMoney: collectMoney,
   };
 
   const createOder = async () => {
@@ -108,6 +110,7 @@ function CreateSingleBody() {
   const handleAddress = (e) => {
     setAddress(e.target.value);
   };
+  console.log("collectMoney", collectMoney);
   return (
     <>
       <div className="containerCreateSingleBody">
@@ -280,59 +283,31 @@ function CreateSingleBody() {
               <div>
                 <span>NGƯỜI TRẢ CƯỚC</span>
                 <div className="flex mt-4">
-                  <div className="mr-6">
-                    <input
-                      type="radio"
-                      className="hover:cursor-pointer"
-                    ></input>
-                    <span className="font-semibold">Người gửi</span>
-                  </div>
-                  <div>
-                    <input
-                      type="radio"
-                      className="hover:cursor-pointer"
-                    ></input>
-                    <span className="font-semibold">Người nhận</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 ml-4">
-              <input type="checkbox" className="hover:cursor-pointer"></input>
-              <span>Thu hộ bằng tiền hàng</span>
-              <input className="border-[1px] border-black ml-4"></input>
-            </div>
-            <div className="mt-4 ml-4 flex justify-evenly">
-              <div>
-                <div>GHI CHÚ</div>
-                <textarea className="mt-4 w-50 h-20 border-[1px] border-black"></textarea>
-              </div>
-              <div className="mr-4 ml-10">
-                <div>YÊU CẦU LẤY HÀNG</div>
-                <h5 className="text-[blue]">Thời gian quy định lấy hàng</h5>
-                <div className="mt-4">
-                  <input type="radio" className="hover:cursor-pointer"></input>
-                  <span className="text-lg">Đến lấy hàng tại nhà</span>
-                </div>
-                <div className="mt-2">
-                  <input type="radio" className="hover:cursor-pointer "></input>
-                  <span className="text-lg">Gửi tại bưu cục</span>
-                </div>
-                <div className="mt-12 font-extrabold ">
-                  <div>THỜI GIAN PHÁT HÀNG MONG MUỐN </div>
-                  <select name="time" id="time" className="w-70">
-                    <option value="">Chiều (1h30 đến 16h00)</option>
-                    <option value="">Tối (18h30 đến 21h00)</option>
-                    <option value="">Giờ hành chính</option>
-                    <option value="">Chủ nhật</option>
-                    <option value="">Ngày nghỉ lễ</option>
+                  <select>
+                    <option>Người gửi</option>
+                    <option>Người nhận</option>
                   </select>
                 </div>
               </div>
             </div>
+            <div className="mt-4 ml-4">
+              <span>Tiền thu hộ</span>
+              <input
+                className="border-[1px] border-black ml-4"
+                onChange={(e) => setCollectMoney(e.target.value)}
+              ></input>{" "}
+              (VND)
+            </div>
+            <div className="mt-4 ml-4 flex justify-evenly">
+              {/* <div>
+                <div>GHI CHÚ</div>
+                <textarea className="mt-4 w-50 h-20 border-[1px] border-black"></textarea>
+              </div> */}
+              <div className="mr-4 ml-10"></div>
+            </div>
             <div className="ml-4 mt-10 mb-4">
-              <input type="checkbox" className="hover:cursor-pointer"></input>
-              <span>Lưu thông tin đơn hàng</span>
+              {/* <input type="checkbox" className="hover:cursor-pointer"></input> */}
+              {/* <span>Lưu thông tin đơn hàng</span> */}
             </div>
           </div>
         </div>

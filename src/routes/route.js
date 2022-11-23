@@ -11,6 +11,12 @@ import DetailOrder from "../page/DetailOrder";
 import PostmanBlankOrderManagement from "../postmanPage/PostmanBlankOrderManagement";
 import OrderInStorage from "../postmanPage/OrderInStorage";
 import EstimatePrice from "../page/storagePage/EstimatePrice";
+import PostmanStatistical from "../postmanPage/PostmanStatistical";
+import StorageBlankOrderManagement from "../page/storagePage/StorageBlankOrderManagement";
+import AddPostman from "../page/storagePage/AddPostman";
+import ImportOrderInStorage from "../page/storagePage/ImportOrderInStorage";
+import AdminManager from "../page/adminPage/AdminManager";
+import AdminStatistical from "../page/adminPage/AdminStatistical";
 
 const userRoutes = [
   { path: "/about", component: About },
@@ -27,29 +33,32 @@ const publicRoutes = [
   { path: "/siginbyotp", component: SiginByOTP, deafaultLayout: null },
 ];
 const adminRoutes = [
-  { path: "/about", component: About },
   { path: "/", component: HomePage },
-  { path: "/login", component: LoginPage, deafaultLayout: null },
-  { path: "/signup", component: SignUp, deafaultLayout: null },
-  { path: "/siginbyotp", component: SiginByOTP, deafaultLayout: null },
-  { path: "/create-single", component: CreateSingle },
-  { path: "/create-excel", component: CreateExcel },
-  { path: "/blanket-order-management", component: BlanketOrderManagement },
-  { path: "/statistical", component: Statistical },
-  { path: "/detail-order", component: DetailOrder },
+  { path: "/admin-manager", component: AdminManager },
+  { path: "/admin-statistical", component: AdminStatistical },
 ];
 const postmanRoutes = [
   { path: "/", component: HomePage },
-  { path: "/blanket-order-management", component: PostmanBlankOrderManagement },
-  { path: "/statistical", component: Statistical },
-  { path: "/order-in-storage", component: OrderInStorage },
+  {
+    path: "/postman-blanket-order-management",
+    component: PostmanBlankOrderManagement,
+  },
+  { path: "/postman-statistical", component: PostmanStatistical },
+  { path: "/postman-order-in-storage", component: OrderInStorage },
 ];
 const storageManager = [
   { path: "/", component: HomePage },
-  { path: "/blanket-order-management", component: PostmanBlankOrderManagement },
-  { path: "/statistical", component: Statistical },
-  { path: "/order-in-storage", component: OrderInStorage },
-  { path: "/estimate-price", component: EstimatePrice },
+  {
+    path: "/storage-blanket-order-management",
+    component: StorageBlankOrderManagement,
+  },
+  {
+    path: "/add-postman",
+    component: AddPostman,
+  },
+  { path: "/storage-order-in-storage", component: ImportOrderInStorage },
+  // { path: "/storage-order-in-storage", component: StorageOrderInStorage },
+  // { path: "/storage-estimate-price", component: StorageEstimatePrice },
 ];
 
 export { publicRoutes, postmanRoutes, adminRoutes, userRoutes, storageManager };

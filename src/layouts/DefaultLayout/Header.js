@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { handleUserLogout } from "../../redux/actions/userAction";
 
@@ -29,7 +29,7 @@ function Header() {
     }
   }, [isLoggedIn]);
   return (
-    <div className="w-full h-16  flex items-center  fixed top-0 text-center bg-white">
+    <div className="w-full h-16  flex items-center  fixed top-0 text-center bg-white z-[100]">
       <div className="w-16 h-16 bg-black">
         <img
           className="w-16 h-16 "
@@ -100,10 +100,9 @@ function Header() {
                 </span>
               )}
             </div>
-            <button></button>
           </div>
           <div className="flex items-center 0 ">
-            <svg
+            {/* <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -116,18 +115,46 @@ function Header() {
                 strokeLinejoin="round"
                 d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5"
               />
-            </svg>
-            <img
-              className="w-10 h-10 rounded-full object-cover"
-              src="https://pixsector.com/cache/50fcb576/av874b0535be604ef535c.png"
-            ></img>
-            <button
+            </svg> */}
+            {/* <div>
+              <img
+                className="w-10 h-10 rounded-full object-cover  group hover:bg-red-700"
+                src="https://pixsector.com/cache/50fcb576/av874b0535be604ef535c.png"
+              ></img>
+              <div className="hidden group-hover:block">dsfdsf</div>
+            </div> */}
+            <div className="pr-[40px] pl-[20px] w-[180px] flex items-center justify-center">
+              <div className="group ">
+                <img
+                  className="w-10 h-10 rounded-full object-cover  group hover:text-[green]"
+                  src="https://pixsector.com/cache/50fcb576/av874b0535be604ef535c.png"
+                ></img>
+                <div className="hidden group-hover:block absolute b-0 mr-[10px] hover:cursor-pointer  translate-x-[-40%]">
+                  <Link
+                    to="/change-inforAccount"
+                    className="hover:text-[red] font-bold"
+                  >
+                    Thông tin/Cập nhật
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleOnclick();
+                    }}
+                    className="mt-[20px] hover:text-[red] font-bold"
+                  >
+                    LogOut
+                  </button>
+                </div>
+              </div>
+            </div>
+            {/* <button
               onClick={() => {
                 handleOnclick();
               }}
+              className="hidden"
             >
-              log out
-            </button>
+              LogOut
+            </button> */}
           </div>
         </div>
       </div>

@@ -17,3 +17,11 @@ export const updatePermissionService = async (data) => {
     console.log(error);
   }
 };
+export const getStatiscicalService = async (date) => {
+  try {
+    let res = await axios.get(`/api/get-chart-data-admin?date=${date}`);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};

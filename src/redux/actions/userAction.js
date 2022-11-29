@@ -50,3 +50,23 @@ export const handleUserLoginWithOTP = (userEmail, OTP) => {
     }
   };
 };
+
+export const handleUpdateUserInfo = (data) => {
+  return async (dispatch) => {
+    try {
+      let res = await loginWithOTP(data);
+      console.log(res);
+      if (res && res.errCode === 0) {
+        dispatch({
+          type: actions.USER_UPDATE_SUCCESS,
+          payload: { data: data },
+        });
+      } else {
+        dispatch({ type: actions.USER_UPDATE_FAILED });
+      }
+    } catch (error) {
+      dispatch({ type: actions.USER_UPDATE_FAILED });
+      console.log(error);
+    }
+  };
+};

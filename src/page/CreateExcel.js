@@ -1,13 +1,17 @@
+import { data } from "autoprefixer";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import { readFileSync, utils, writeFileXLSX } from "xlsx";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
 import { bulkCreateOrderService } from "../services/userService";
 function CreateExcel() {
   const [arrInfo, setArrInfo] = useState([]);
-  const date = new Date().setHours(0, 0, 0, 0);
+  const date = new Date().setHours(0, 0, 0, 0) / 1000;
+  const senderEmail = useSelector((state) => state.user.userInfo.email);
   const arrMAster = [
     {
       "Mã đơn hàng": "ssa3432kdsf34",
-      "Email người gửi": "nguyenhoang632001@gmail.com",
       "Tên người nhận": "Phạm tới",
       "Số điện thoại người nhận": "0343255434242",
       "Địa chỉ người nhận": "Quảng NGãi",
@@ -39,49 +43,74 @@ function CreateExcel() {
     let arr1 = [];
     let arr2 = [];
     arrInfo.map((item) => {
-      return arr1.includes(
-        JSON.stringify([item["Mã đơn hàng"], item["Email người gửi"]])
-      )
+      return arr1.includes(JSON.stringify([item["Mã đơn hàng"]]))
         ? ""
-        : arr1.push(
-            JSON.stringify([item["Mã đơn hàng"], item["Email người gửi"]])
-          ) && arr2.push(item);
+        : arr1.push(JSON.stringify([item["Mã đơn hàng"]])) && arr2.push(item);
     });
     return arr2;
   }
-  console.log("arrInfo", arrInfo);
   const orderData = unique(arrInfo);
-  console.log("orderData", orderData);
+
+  let commodityArr = arrInfo.map((item) => {
+    return {
+      orderCode: item["Mã đơn hàng"],
+      name: item["Tên vật phẩm"],
+      amount: item["Số lượng vật phẩm"],
+      value: item["Giá trị vật phẩm"],
+      weight: item["Trọng lượng vật phẩm"],
+      senderEmail: senderEmail,
+    };
+  });
   const data = {
     orderArr: orderData.map((item) => {
+      let comArr = commodityArr.filter((etem) => {
+        return item["Mã đơn hàng"] === etem.orderCode;
+      });
+      const addressArr = item["Địa chỉ người nhận"].split(", ", 3);
+      const char =
+        addressArr[0] + ", " + addressArr[1] + ", " + addressArr[2] + ", ";
+      let lengthModify = item["Địa chỉ người nhận"].length - char.length;
+      let end = item["Địa chỉ người nhận"].length;
+      const address = item["Địa chỉ người nhận"].slice(-lengthModify, end);
+
       return {
-        senderEmail: item["Email người gửi"],
+        senderEmail: senderEmail,
         fullName: item["Tên người nhận"],
-        address: item["Địa chỉ người nhận"],
+        address: address,
         orderCode: item["Mã đơn hàng"],
-        collecMoney: item["Tiền thu hộ"],
-        price: item["Cước phí"],
+        collectMoney: item["Tiền thu hộ"],
+        phoneNumber: item["Số điện thoại người nhận"],
         statusId: "CREATE",
         date: date,
         receiverEmail: item["Email người nhận"],
+        freightPayer: item["Người trả phí"],
+        provinceId: addressArr[0],
+        wardId: addressArr[2],
+        districtId: addressArr[1],
+        commodityValue: comArr.reduce((total, com) => {
+          return total + Number(com.value) * Number(com.amount);
+        }, 0),
+        totalWeight: comArr.reduce((total, com) => {
+          return total + Number(com.weight) * Number(com.amount);
+        }, 0),
       };
     }),
-    commodityArr: arrInfo.map((item) => {
-      return {
-        orderCode: item["Mã đơn hàng"],
-        name: item["Tên vật phẩm"],
-        amount: item["Số lượng vật phẩm"],
-        value: item["Giá trị vật phẩm"],
-        weight: item["Trọng lượng vật phẩm"],
-        senderEmail: item["Email người gửi"],
-      };
-    }),
+    commodityArr: commodityArr,
+    senderEmail: senderEmail,
   };
+  const dispatch = useDispatch();
   const handleToPushOrder = () => {
     bulkCreateOrder(data);
   };
   const bulkCreateOrder = async (data) => {
-    await bulkCreateOrderService(data);
+    dispatch(fetchDataStart());
+    let res = await bulkCreateOrderService(data);
+    if (res && res.errCode === 0) {
+      toast.success("Đẩy đơn thành công!");
+    } else {
+      toast.error("Đẩy đơn thất bại!");
+    }
+    dispatch(fetchDataFinished());
   };
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] bg-[#eeeeee]">

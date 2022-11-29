@@ -7,10 +7,23 @@ import {
   faSitemap,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { createOderService } from "../services/userService";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ClipLoader } from "react-spinners";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  countPriceService,
+  createOderService,
+  getDistrictService,
+  getProvinceService,
+  getWardService,
+} from "../services/userService";
+import Select from "react-select";
+import { builDataSelect } from "../utils/comomUtil";
+import { useDebounce } from "use-debounce";
+import { toast } from "react-toastify";
+import _ from "lodash";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
+
 function CreateSingleBody() {
   const [nameMommodity, setNameMommodity] = useState("");
   const [kg, setKg] = useState("");
@@ -25,6 +38,27 @@ function CreateSingleBody() {
   const [address, setAddress] = useState("");
   const emailUser = useSelector((state) => state.user.userInfo.email);
   const [collectMoney, setCollectMoney] = useState(0);
+  const [provinceArr, setProvinceArr] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [districtArr, setDistrictArr] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [wardArr, setWardArr] = useState([]);
+  const [selectedWard, setSelectedWard] = useState("");
+  const userInfo = useSelector((state) => state.user.userInfo);
+  const [countprice, setCountPrice] = useState(0);
+  const totalWeight = product.reduce((total, pro) => {
+    return total + Number(pro.weight) * Number(pro.amount);
+  }, 0);
+  const totalValue = product.reduce((total, pro) => {
+    return total + Number(pro.value) * Number(pro.amount);
+  }, 0);
+
+  const [provinceIdDebounce] = useDebounce(selectedProvince.value, 1000);
+  const [totalWeightDebounce] = useDebounce(totalWeight, 1000);
+  const [totalValueDebounce] = useDebounce(totalValue, 1000);
+  const [collectMoneyDebounce] = useDebounce(collectMoney, 1000);
+  const [isPriceLoading, setIsPriceLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const data = {
     senderEmail: emailUser,
@@ -35,15 +69,26 @@ function CreateSingleBody() {
     orderCode: codeMommodity,
     commodities: product,
     collectMoney: collectMoney,
+    provinceId: selectedProvince.value,
+    districtId: selectedDistrict.value,
+    wardId: selectedWard.value,
+    price: countprice,
   };
 
   const createOder = async () => {
-    await createOderService(data);
+    dispatch(fetchDataStart());
+    let res = await createOderService(data);
+    if (res && res.errCode === 0) {
+      toast.success("Tạo đơn thành công!");
+    } else {
+      toast.error("Tạo đơn thất bại!");
+    }
+    dispatch(fetchDataFinished());
   };
   const handleToSendOder = () => {
     createOder();
   };
-  console.log("kg", kg);
+
   const handleOnchangNameMommodity = (e) => {
     setNameMommodity(e.target.value);
   };
@@ -88,13 +133,11 @@ function CreateSingleBody() {
   };
   const handleFix = (index) => {
     const objectProduct = product[index];
-
     setNameMommodity(objectProduct.name);
     setKg(objectProduct.weight);
     setCoute(objectProduct.amount);
     setPrice(objectProduct.value);
     setStatus("Update");
-
     setIndex(index);
   };
   const handleCodeMommodity = (e) => {
@@ -110,7 +153,82 @@ function CreateSingleBody() {
   const handleAddress = (e) => {
     setAddress(e.target.value);
   };
-  console.log("collectMoney", collectMoney);
+  useEffect(() => {
+    getProvince();
+  }, []);
+  const getProvince = async () => {
+    const dataProvince = await getProvinceService();
+    if (dataProvince && dataProvince.errCode === 0) {
+      setProvinceArr(builDataSelect(dataProvince.data, "PROVINCE"));
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProvince) {
+      getDistrict();
+    }
+  }, [selectedProvince]);
+
+  const getDistrict = async () => {
+    const dataDistrict = await getDistrictService(selectedProvince.value);
+
+    if (dataDistrict && dataDistrict.errCode === 0) {
+      setDistrictArr(builDataSelect(dataDistrict.data, "DISTRICT"));
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDistrict) {
+      getWard();
+    }
+  }, [selectedDistrict]);
+
+  useEffect(() => {
+    handleCountPrice();
+  }, [
+    provinceIdDebounce,
+    totalValueDebounce,
+    totalWeightDebounce,
+    collectMoneyDebounce,
+  ]);
+
+  const getWard = async () => {
+    const dataWard = await getWardService(selectedDistrict.value);
+    if (dataWard && dataWard.errCode === 0) {
+      setWardArr(builDataSelect(dataWard.data, "WARD"));
+    }
+  };
+
+  const handleCountPrice = async () => {
+    if (!userInfo.provinceData.id) {
+      toast.info("Cần cập nhật địa chỉ người dùng!");
+    } else {
+      if (totalValue && totalWeight && !_.isEmpty(selectedProvince)) {
+        setIsPriceLoading(true);
+        let res =
+          collectMoneyDebounce <= 0
+            ? await countPriceService({
+                fromProvinceId: userInfo.provinceData.id,
+                toProvinceId: provinceIdDebounce,
+                weight: totalWeightDebounce,
+                commodityValue: totalValueDebounce,
+              })
+            : await countPriceService({
+                fromProvinceId: userInfo.provinceData.id,
+                toProvinceId: provinceIdDebounce,
+                weight: totalWeightDebounce,
+                commodityValue: totalValueDebounce,
+                cod: "COD",
+                collectMoney: collectMoneyDebounce,
+              });
+        if (res && res.errCode === 0) {
+          setCountPrice(res.totalPrice);
+        }
+        setIsPriceLoading(false);
+      }
+    }
+  };
+
   return (
     <>
       <div className="containerCreateSingleBody">
@@ -134,11 +252,12 @@ function CreateSingleBody() {
               <input
                 value={"Username"}
                 className="border-[1px] border-black"
+                readOnly
               ></input>
             </div>
             <span className="text-[red]">Người gửi không được để trống</span>
           </div>
-          <div className="receive ">
+          <div className="receive pl-[15%] ">
             <div className="headerReceive">
               <div className="itemHeaderReceives">
                 {" "}
@@ -152,7 +271,7 @@ function CreateSingleBody() {
                 </div>
               </div>
             </div>
-            <div className="bodyReceive">
+            <div className="bodyReceive mb-[20px]">
               <div className="itemBodyReceive">
                 <span className="ItemReceiveTitle"> Điện thoại</span>
                 <input
@@ -161,6 +280,7 @@ function CreateSingleBody() {
                   onChange={(e) => handlePhoneNumber(e)}
                 ></input>
               </div>
+
               <div className="itemBodyReceive">
                 <span className="ItemReceiveTitle">Họ tên</span>
                 <input
@@ -178,8 +298,48 @@ function CreateSingleBody() {
                 ></input>
               </div>
             </div>
+            <div className=" ">
+              <div className="flex items-center justify-start mb-[20px]">
+                {" "}
+                <h2 className="w-[80px]">Tỉnh</h2>
+                <Select
+                  value={selectedProvince}
+                  options={provinceArr}
+                  className="w-[200px] relative z-[1]"
+                  onChange={(e) => {
+                    setSelectedProvince(e);
+                    setSelectedWard({});
+                    setSelectedDistrict({});
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-start mb-[20px]">
+                {" "}
+                <h2 className="w-[80px]">Huyện</h2>
+                <Select
+                  value={selectedDistrict}
+                  options={districtArr}
+                  className="w-[200px]"
+                  onChange={(e) => {
+                    setSelectedDistrict(e);
+                    setSelectedWard({});
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-start mb-[20px]">
+                {" "}
+                <h2 className="w-[80px]">Xã</h2>
+                <Select
+                  value={selectedWard}
+                  options={wardArr}
+                  className="w-[200px]"
+                  onChange={(e) => {
+                    setSelectedWard(e);
+                  }}
+                />
+              </div>
+            </div>
           </div>
-          <div></div>
         </div>
         <div className="createSingleBodyRight">
           <div className="commodity">
@@ -204,7 +364,6 @@ function CreateSingleBody() {
             <div className="">
               <h2>Hàng hóa đã thêm</h2>
               {product.map((productItem, index) => {
-                console.log(productItem);
                 return (
                   <div key={index} className="bg-slate-300 mb-2 mt-2">
                     <span>Tên hàng hóa: {productItem.name}</span>
@@ -313,8 +472,23 @@ function CreateSingleBody() {
         </div>
       </div>
       <div className="container-footer-createSingleBdy flex justify-center ">
-        <div className="item-footer-createSingleBody">Tổng cước</div>
-        <div className="item-footer-createSingleBody">Tiền thu hộ</div>
+        <div className="item-footer-createSingleBody flex flex-col relative">
+          Tổng cước
+          <span className="mt-5">{countprice} VNĐ</span>
+          <ClipLoader
+            color={"blue"}
+            loading={isPriceLoading}
+            // cssOverride={override}
+            className="absolute top-[70%] left-[40%]"
+            size={15}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </div>
+        <div className="item-footer-createSingleBody flex flex-col ">
+          Tiền thu hộ
+          <span className="mt-5">{collectMoney} VNĐ</span>
+        </div>
         <div className="item-footer-createSingleBody"></div>
         <div className="item-footer-createSingleBody">Thời gian dự kiến</div>
         <div className="item-footer-createSingleBody-Agree flex-col pt-4">

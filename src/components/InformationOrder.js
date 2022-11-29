@@ -1,12 +1,13 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useRef } from "react";
 import { useState } from "react";
 import ReactDOM from "react-dom";
 import Modal from "react-modal";
 import ReactPaginate from "react-paginate";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useReactToPrint } from "react-to-print";
+import { toast } from "react-toastify";
 import { updateOrderStatusService } from "../postmanService/postmanService";
-import { getInformationCommodity } from "../services/userService";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
 
 const customStyles = {
   content: {
@@ -24,7 +25,11 @@ function InformationOrder({ ...props }) {
   const [sellectedItem, setSellectedItem] = useState("");
   let subtitle;
   const [modalIsOpen, setIsOpen] = React.useState(false);
-  const [currentComodityArr, setCurrentCommodityArr] = useState([]);
+  let dispatch = useDispatch();
+  const componentRef = useRef();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
 
   function openModal(item) {
     setIsOpen(true);
@@ -40,34 +45,24 @@ function InformationOrder({ ...props }) {
     setIsOpen(false);
   }
 
-  useEffect(() => {
-    if (sellectedItem.senderEmail && sellectedItem.orderCode) {
-      getCommodity();
-    }
-  }, [sellectedItem.senderEmail, sellectedItem.orderCode]);
-  const getCommodity = async () => {
-    const data = await getInformationCommodity(
-      sellectedItem.senderEmail,
-      sellectedItem.orderCode
-    );
-    if (data && data.errCode === 0) {
-      setCurrentCommodityArr(data.data);
-    }
-  };
-
   const handleToCancle = (item) => {
     updateOrder(item);
   };
   const verifierEmail = useSelector((state) => state.user.userInfo.email);
 
   const updateOrder = async (item) => {
+    dispatch(fetchDataStart());
     let id = item.id;
     let collectMoney = item.collectMoney;
-    let price = "0";
+    let price = item.price;
     let statusId = "";
+    let toastSuccess = "";
+    let toastFailed = "";
     switch (props.currentStatus) {
       case "CREATE":
         statusId = "CANCLE";
+        toastSuccess = "Hủy thành công!";
+        toastFailed = "Hủy thất bại!";
         break;
 
       default:
@@ -76,13 +71,17 @@ function InformationOrder({ ...props }) {
 
     let data = await updateOrderStatusService({
       id,
-      statusId: "CANCLE",
+      statusId: statusId,
       verifierEmail,
       collectMoney,
       price,
     });
     if (data && data.errCode === 0) {
       props.setToggle(!props.toggle);
+      toast.success(toastSuccess);
+    } else {
+      toast.error(toastFailed);
+      dispatch(fetchDataFinished());
     }
   };
 
@@ -159,57 +158,83 @@ function InformationOrder({ ...props }) {
                       style={customStyles}
                       contentLabel="Example Modal"
                     >
-                      <div className="flex items-center justify-between w-[500px]">
-                        <h2
-                          ref={(_subtitle) => (subtitle = _subtitle)}
-                          className="text-[red]"
-                        >
-                          THÔNG TIN ĐƠN HÀNG
-                        </h2>
-                        <button onClick={closeModal}>Close</button>
-                      </div>
-                      <div className="mt-[20px]">
-                        <div className="mt-[20px]">
-                          Mã đơn hàng {sellectedItem && sellectedItem.orderCode}
+                      <button
+                        className="absolute top-[20px] right-[20px]  p-[8px] bg-[red]  rounded-[5px] text-[white]"
+                        onClick={closeModal}
+                      >
+                        Close
+                      </button>
+                      <div ref={componentRef} className="pl-[50px] pt-[50px]">
+                        <div className="flex items-center justify-between w-[500px] ">
+                          <h2
+                            ref={(_subtitle) => (subtitle = _subtitle)}
+                            className="text-[red]"
+                          >
+                            THÔNG TIN ĐƠN HÀNG
+                          </h2>
                         </div>
+                        <div className="mt-[20px]">
+                          <div className="mt-[20px]">
+                            Mã đơn hàng{" "}
+                            {sellectedItem && sellectedItem.orderCode}
+                          </div>
 
-                        <div className="mt-[20px]">
-                          Người gửi:{" "}
-                          {sellectedItem && sellectedItem.senderEmail}
-                        </div>
-                        <div className="mt-[20px]">
-                          Người nhận: {sellectedItem && sellectedItem.fullName}
-                        </div>
-                        {/* <div className="mt-[20px]">
+                          <div className="mt-[20px]">
+                            Người gửi:{" "}
+                            {sellectedItem && sellectedItem.senderEmail}
+                          </div>
+                          <div className="mt-[20px] mb-[20px]">
+                            Người nhận:{" "}
+                            {sellectedItem && sellectedItem.fullName}
+                          </div>
+                          <h2>
+                            Địa chỉ :{" "}
+                            {sellectedItem &&
+                              sellectedItem.province.provinceName}
+                            ,
+                            {sellectedItem &&
+                              sellectedItem.district.districtName}
+                            , {sellectedItem && sellectedItem.ward.wardName},{" "}
+                            {sellectedItem && sellectedItem.address}
+                          </h2>
+
+                          {/* <div className="mt-[20px]">
                           Email người nhận:{" "}
                           {sellectedItem && sellectedItem.receiverEmail}
                         </div> */}
 
-                        <div className="mt-[20px]">
-                          Địa chỉ người nhận:{" "}
-                          {sellectedItem && sellectedItem.address}
+                          <div className="mt-[20px]">
+                            Thu hộ:{" "}
+                            {sellectedItem && sellectedItem.collectMoney} VNĐ
+                          </div>
+                          <div className="mt-[20px]">
+                            Tiền Cước Phí:{" "}
+                            {sellectedItem && sellectedItem.price} VNĐ
+                          </div>
+                          <h2 className="text-[red]">
+                            Thông tin mỗi đơn hàng{" "}
+                          </h2>
+                          {sellectedItem.commodityData &&
+                            sellectedItem.commodityData.map((item, index) => {
+                              return (
+                                <div className="mt-[20px]" key={index}>
+                                  <h3>
+                                    Tên hàng {index}: {item.name}
+                                  </h3>
+                                  <h3>Trọng lượng đơn hàng : {item.weight}</h3>
+                                  <h3>Số lượng đơn hàng : {item.amount}</h3>
+                                  <h3>Giá trị đơn hàng : {item.value} VNĐ</h3>
+                                </div>
+                              );
+                            })}
                         </div>
-
-                        <div className="mt-[20px]">
-                          Thu hộ: {sellectedItem && sellectedItem.collectMoney}
-                        </div>
-                        <div className="mt-[20px]">
-                          Tiền Cước Phí: 20.000 VND
-                        </div>
-                        <h2 className="text-[red]">Thông tin mỗi đơn hàng </h2>
-                        {currentComodityArr.map((item, index) => {
-                          return (
-                            <div className="mt-[20px]" key={index}>
-                              <h3>
-                                Tên hàng {index}: {item.name}
-                              </h3>
-                              <h3>Trọng lượng đơn hàng : {item.weight}</h3>
-                              <h3>Số lượng đơn hàng : {item.amount}</h3>
-                              <h3>Giá trị đơn hàng : {item.value}</h3>
-                            </div>
-                          );
-                        })}
                       </div>
+                      <button
+                        onClick={handlePrint}
+                        className="border-black border-solid border-[1px] p-[8px] bg-[blue] text-[white]  rounded-[5px] mt-[20px] ml-[200px]"
+                      >
+                        Print this out!
+                      </button>
                     </Modal>
                   </td>
                 </tr>

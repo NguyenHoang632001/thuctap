@@ -5,7 +5,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getChart } from "../services/userService";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
+import { toast } from "react-toastify";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -19,6 +21,7 @@ function Statistical() {
   let totalOrder = 0;
   let totalPrice = 0;
   let totalCollectMoney = 0;
+  const dispatch = useDispatch();
 
   arrToLoadTable.map((item, index) => {
     totalOrder = totalOrder + item.length;
@@ -40,9 +43,10 @@ function Statistical() {
     getDataChart();
   }, [startDate]);
   const getDataChart = async () => {
+    dispatch(fetchDataStart());
     let date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
     const data = await getChart(emailUser, date);
-    console.log("sdfsadafusser", data);
+
     setDataChart(data);
     setArrChart([
       data.cancelled.length,
@@ -118,6 +122,8 @@ function Statistical() {
         price: data.wait.price,
       },
     ]);
+
+    dispatch(fetchDataFinished());
   };
   const [itemNav, setItemNav] = useState([
     { title: "Thống kê" },

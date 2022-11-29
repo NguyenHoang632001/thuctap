@@ -17,6 +17,7 @@ import AddPostman from "../page/storagePage/AddPostman";
 import ImportOrderInStorage from "../page/storagePage/ImportOrderInStorage";
 import AdminManager from "../page/adminPage/AdminManager";
 import AdminStatistical from "../page/adminPage/AdminStatistical";
+import ChangeInfoAccount from "../page/ChangeInfoAccount";
 
 const userRoutes = [
   { path: "/about", component: About },
@@ -26,6 +27,7 @@ const userRoutes = [
   { path: "/blanket-order-management", component: BlanketOrderManagement },
   { path: "/statistical", component: Statistical },
   { path: "/detail-order", component: DetailOrder },
+  { path: "/change-inforAccount", component: ChangeInfoAccount },
 ];
 const publicRoutes = [
   { path: "/login", component: LoginPage, deafaultLayout: null },

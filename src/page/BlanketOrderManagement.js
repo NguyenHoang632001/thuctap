@@ -3,13 +3,15 @@ import { faSearch, faCalendarDays } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import Pagination from "@atlaskit/pagination";
-
+import Select from "react-select";
 import { getAction, getOder } from "../services/userService";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import InformationOrder from "../components/InformationOrder";
 import { Link } from "react-router-dom";
+import { utils, writeFileXLSX } from "xlsx";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
 
 function BlanketOrderManagement() {
   const [status, setStatus] = useState("");
@@ -21,6 +23,31 @@ function BlanketOrderManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [toggle, setToggle] = useState(false);
+  const dispatch = useDispatch();
+  const arrMAster = [];
+
+  orderData.rows &&
+    orderData.rows.length > 0 &&
+    orderData.rows.forEach((item) => {
+      if (item.commodityData) {
+        item.commodityData.forEach((element) => {
+          arrMAster.push({
+            "Mã đơn hàng": item.orderCode,
+            "Tên người nhận": item.fullName,
+            "Số điện thoại người nhận": item.phoneNumber,
+            "Địa chỉ người nhận": `${item.province.provinceName}, ${item.district.districtName}, ${item.ward.wardName}, ${item.address}`,
+            "Tên vật phẩm": element.name,
+            "Số lượng vật phẩm": element.amount,
+            "Trọng lượng vật phẩm": element.weight,
+            "Giá trị vật phẩm": element.value,
+            "Người trả phí": item.freightPayer,
+            "Tiền thu hộ": item.collectMoney,
+          });
+        });
+      }
+    });
+  console.log(arrMAster);
+
   useEffect(() => {
     getaction();
   }, []);
@@ -30,13 +57,15 @@ function BlanketOrderManagement() {
     }
   }, [currentStatus, currentPage, startDate, toggle]);
   const getaction = async () => {
+    dispatch(fetchDataStart());
     const data = await getAction("STATUS");
     if (data && data.errCode === 0) {
       setStatus(data);
       setCurrentStatus(data.data[0] && data.data[0].keyMap);
     }
+    dispatch(fetchDataFinished());
   };
-  console.log(currentStatus);
+
   const data = status ? status.data : [];
 
   const [active, setActive] = useState(0);
@@ -49,6 +78,7 @@ function BlanketOrderManagement() {
   const email = useSelector((state) => state.user.userInfo.email);
 
   const oder = async () => {
+    dispatch(fetchDataStart());
     const date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
     const pageSize = 8;
     const orderData = await getOder(
@@ -63,6 +93,7 @@ function BlanketOrderManagement() {
     setIsLoadingPagination(true);
     setOrderData(orderData.data);
     setTotalPages(Math.ceil(orderData.data.count / pageSize));
+    dispatch(fetchDataFinished());
   };
 
   const createPageArr = (pages) => {
@@ -72,7 +103,14 @@ function BlanketOrderManagement() {
     }
     return pageArr;
   };
-  console.log("toggle", toggle);
+
+  console.log("sfdsfdsfdsf", orderData);
+  const writeFileExcel = async () => {
+    const wb = utils.book_new();
+    const ws = utils.json_to_sheet(arrMAster);
+    utils.book_append_sheet(wb, ws, "mysheet1");
+    await writeFileXLSX(wb, "exportExcel.xlsx");
+  };
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 ">
       <h2 className="text-xl">QUẢN LÍ VẬN ĐƠN</h2>
@@ -118,12 +156,19 @@ function BlanketOrderManagement() {
           <button className="border-[1px] border-black  w-[150px] h-[30px] mr-4">
             In đơn
           </button>
-          <button className="border-[1px] border-black  w-[150px] h-[30px] mr-4">
+          <button
+            onClick={() => {
+              if (orderData && orderData.rows.length > 0) {
+                writeFileExcel();
+              }
+            }}
+            className="border-[1px] border-black  w-[150px] h-[30px] mr-4"
+          >
             Xuất Excel
           </button>
-          {/* <button className="border-[1px] border-black w-[150px] h-[30px] mr-4">
+          <button className="border-[1px] border-black w-[150px] h-[30px] mr-4">
             Nhập Excel
-          </button> */}
+          </button>
           <Link
             to="/create-excel"
             className="border-[1px] border-black w-[150px] h-[30px] mr-4"
@@ -167,7 +212,7 @@ function BlanketOrderManagement() {
               </span>
             </div>
             {isLoadingPagination && (
-              <div className="buttonChangePage bg-black ">
+              <div className="buttonChangePage bg-black flex items-center justify-center">
                 <Pagination
                   pages={[...createPageArr(totalPages)]}
                   max={totalPages >= 10 ? 8 : totalPages}

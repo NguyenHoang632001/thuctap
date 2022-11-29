@@ -96,3 +96,45 @@ export const getInformationCommodity = async (senderEmail, orderCode) => {
     console.log(error);
   }
 };
+export const getProvinceService = async () => {
+  try {
+    let res = await axios.get(`/api/get-province`);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getDistrictService = async (provinceId) => {
+  try {
+    let res = await axios.get(`/api/get-district?&provinceId=${provinceId}`);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getWardService = async (districtId) => {
+  try {
+    let res = await axios.get(`/api/get-ward?&districtId=${districtId}`);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateUserInfoService = async (data) => {
+  try {
+    let res = await axios.post(`/api/update-user-info`, data);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const countPriceService = async (data) => {
+  try {
+    let res = await axios.post(`/api/billing`, data);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};

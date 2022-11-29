@@ -26,6 +26,13 @@ export const userReducer = (state = initState, action) => {
     case actions.USER_LOGOUT_FAILED: {
       return { ...state };
     }
+
+    case actions.USER_UPDATE_SUCCESS: {
+      let coppyState = { ...state };
+      coppyState.userInfo = {};
+      coppyState.accessToken = "";
+      return { ...coppyState };
+    }
     default:
       return { ...state };
   }

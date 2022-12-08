@@ -7,10 +7,11 @@ import Pagination from "@atlaskit/pagination";
 import { getAction, getOder } from "../services/userService";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import PostmanInformationOrder from "./PostmanInformationOrder";
 import { getOderAll, getOderPostman } from "../postmanService/postmanService";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
 
 function PostmanBlankOrderManagement() {
   const [status, setStatus] = useState("");
@@ -22,7 +23,8 @@ function PostmanBlankOrderManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [toggle, setToggle] = useState(false);
-  console.log("status", status);
+  const dispatch = useDispatch();
+
   useEffect(() => {
     getaction();
   }, []);
@@ -39,6 +41,7 @@ function PostmanBlankOrderManagement() {
   };
 
   const data = status ? status.data : [];
+  const userInfo = useSelector((state) => state.user.userInfo);
 
   const [active, setActive] = useState(0);
   const handleonclick = (index, statusId) => {
@@ -51,20 +54,24 @@ function PostmanBlankOrderManagement() {
   const date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
 
   const order = async () => {
+    dispatch(fetchDataStart());
     const pageSize = 8;
     const orderData = await getOderAll(
       currentPage,
       pageSize,
       date,
-      currentStatus
+      currentStatus,
+      userInfo.wardData.id
     );
 
     setIsLoadingPagination(true);
     setOrderData(orderData.data);
     setTotalPages(Math.ceil(orderData.data.count / pageSize));
+    dispatch(fetchDataFinished());
   };
 
   const orderPostman = async () => {
+    dispatch(fetchDataStart());
     const pageSize = 8;
     const orderData = await getOderPostman(
       currentPage,
@@ -77,6 +84,7 @@ function PostmanBlankOrderManagement() {
     setIsLoadingPagination(true);
     setOrderData(orderData.data);
     setTotalPages(Math.ceil(orderData.data.count / pageSize));
+    dispatch(fetchDataFinished());
   };
 
   const createPageArr = (pages) => {
@@ -94,16 +102,16 @@ function PostmanBlankOrderManagement() {
 
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 ">
-      <h2 className="text-xl">QUẢN LÍ VẬN ĐƠN</h2>
+      <h2 className="text-xl pt-[20px]">QUẢN LÍ VẬN ĐƠN</h2>
       <div className=" mt-8 ">
         <div className="flex items-center justify-between pt-8">
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               className=" border-[1px] border-black w-[150px] h-[30px]"
               placeholder="Tìm đơn hàng"
             ></input>
             <FontAwesomeIcon icon={faSearch} className=" ml-[10px]" />
-          </div>
+          </div> */}
           {/* <div className="flex items-center justify-between border-[1px] border-black w-[150px] h-[30px]">
             <FontAwesomeIcon
               icon={faCalendarDays}
@@ -123,16 +131,8 @@ function PostmanBlankOrderManagement() {
               <option>Tất cả kho hàng</option>
             </select>
           </div> */}
-          <div>
-            <select className=" border-[1px] border-black w-[150px] h-[30px]">
-              <option>Người trả cước</option>
-              <option>Tất cả</option>
-              <option>Người nhận </option>
-              <option>Người gửi</option>
-            </select>
-          </div>
         </div>
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <button className="border-[1px] border-black  w-[150px] h-[30px] mr-4">
             In đơn
           </button>
@@ -142,7 +142,7 @@ function PostmanBlankOrderManagement() {
           <button className="border-[1px] border-black w-[150px] h-[30px] mr-4">
             Nhập Excel
           </button>
-        </div>
+        </div> */}
         <hr className="mt-4 h-[3px] w-full bg-red-700 "></hr>
         <div className="flex items-center justify-between mt-4">
           {datafilter.map((action, index) => {
@@ -176,7 +176,7 @@ function PostmanBlankOrderManagement() {
             ></PostmanInformationOrder>
             <div className="showPage mt-[20px] mb-[20px] ml-[auto] mf-[auto] text-center">
               <span>
-                Trang {currentPage}/{totalPages}
+                Trang {totalPages === 0 ? 0 : currentPage}/{totalPages}
               </span>
             </div>
             {isLoadingPagination && (

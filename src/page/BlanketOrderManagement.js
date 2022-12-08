@@ -25,11 +25,12 @@ function BlanketOrderManagement() {
   const [toggle, setToggle] = useState(false);
   const dispatch = useDispatch();
   const arrMAster = [];
-
+  console.log("orderData", orderData);
   orderData.rows &&
     orderData.rows.length > 0 &&
     orderData.rows.forEach((item) => {
       if (item.commodityData) {
+        // item.ward.wardName ?()
         item.commodityData.forEach((element) => {
           arrMAster.push({
             "Mã đơn hàng": item.orderCode,
@@ -116,14 +117,14 @@ function BlanketOrderManagement() {
       <h2 className="text-xl">QUẢN LÍ VẬN ĐƠN</h2>
       <div className=" mt-8 ">
         <div className="flex items-center justify-between pt-8">
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               className=" border-[1px] border-black w-[150px] h-[30px]"
               placeholder="Tìm đơn hàng"
             ></input>
             <FontAwesomeIcon icon={faSearch} className=" ml-[10px]" />
-          </div>
-          <div className="flex items-center justify-between border-[1px] border-black w-[150px] h-[30px]">
+          </div> */}
+          <div className="flex items-center justify-between border-[1px] border-black w-[150px] h-[30px] ml-[80%]">
             <FontAwesomeIcon
               icon={faCalendarDays}
               className="text-orange-500 mr-2"
@@ -137,25 +138,8 @@ function BlanketOrderManagement() {
               className="decoration-emerald-300 border-[1px] border-black w-[150px] h-[30px]"
             />
           </div>
-          <div>
-            <select className=" border-[1px] border-black w-[150px] h-[30px]">
-              <option>Tất cả kho hàng</option>
-              <option>{/* <input></input> */}</option>
-            </select>
-          </div>
-          <div>
-            <select className=" border-[1px] border-black w-[150px] h-[30px]">
-              <option>Người trả cước</option>
-              <option>Tất cả</option>
-              <option>Người nhận </option>
-              <option>Người gửi</option>
-            </select>
-          </div>
         </div>
         <div className="mt-6">
-          <button className="border-[1px] border-black  w-[150px] h-[30px] mr-4">
-            In đơn
-          </button>
           <button
             onClick={() => {
               if (orderData && orderData.rows.length > 0) {
@@ -167,14 +151,13 @@ function BlanketOrderManagement() {
             Xuất Excel
           </button>
           <button className="border-[1px] border-black w-[150px] h-[30px] mr-4">
-            Nhập Excel
+            <Link
+              to="/create-excel"
+              className="border-[1px] border-black w-[150px] h-[30px] mr-4"
+            >
+              Nhập Excel
+            </Link>
           </button>
-          <Link
-            to="/create-excel"
-            className="border-[1px] border-black w-[150px] h-[30px] mr-4"
-          >
-            Nhập Excel
-          </Link>
         </div>
         <hr className="mt-4 h-[3px] w-full bg-red-700 "></hr>
         <div className="flex items-center justify-between mt-4">

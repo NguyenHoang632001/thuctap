@@ -193,7 +193,8 @@ function OrderByOtherStorage(props) {
         </table>
         <div className="showPage mt-[20px] mb-[20px] ml-[auto] mf-[auto] text-center">
           <span>
-            Trang {currentPage}/{totalPagesByStorage}
+            Trang {totalPagesByStorage === 0 ? 0 : currentPage}/
+            {totalPagesByStorage}
           </span>
         </div>
         {isLoadingPagination && (

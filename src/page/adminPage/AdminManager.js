@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 //hell lasst
 import Modal from "react-modal";
 import {
@@ -8,6 +8,11 @@ import {
   updatePermissionService,
 } from "../../adminService.js/adminService";
 import { getAllStorage } from "../../postmanService/postmanService";
+import {
+  fetchDataFinished,
+  fetchDataStart,
+} from "../../redux/actions/appAction";
+import { toast } from "react-toastify";
 
 function AdminManager() {
   const [modi, setModi] = useState("R4");
@@ -27,11 +32,14 @@ function AdminManager() {
     getUser();
   }, [modi]);
   let subtitle;
+  const dispatch = useDispatch();
   const getUser = async () => {
+    dispatch(fetchDataStart());
     const data = await getUserService(1, 8, modi);
     if (data && data.errCode === 0) {
       setDataUser(data.data.rows);
     }
+    dispatch(fetchDataFinished());
   };
   function openModal(item) {
     setSelectedItem(item);
@@ -72,18 +80,31 @@ function AdminManager() {
   console.log("takeallStorage", takeallStorage);
   console.log("storageId", storageId);
   const updatePermission = async () => {
+    dispatch(fetchDataStart());
+
     if (permission === "R2") {
       const data = await updatePermissionService({
         id: selectedItem.id,
         roleId: permission,
         storageId: storageId,
       });
+      if (data && data.errCode === 0) {
+        toast.success("Cập nhật Thành công");
+      } else {
+        toast.error("Cập nhật thất bại");
+      }
     } else {
       const data = await updatePermissionService({
         id: selectedItem.id,
         roleId: permission,
       });
+      if (data && data.errCode === 0) {
+        toast.success("Cập nhật Thành công");
+      } else {
+        toast.error("Cập nhật thất bại");
+      }
     }
+    dispatch(fetchDataFinished());
   };
   const handleToUpdate = (id) => {
     updatePermission(id);
@@ -179,6 +200,7 @@ function AdminManager() {
                           className="bg-[green] p-[6px] pl-[12px] pr-[12px]"
                           onClick={() => {
                             handleToUpdate();
+                            closeModal();
                           }}
                         >
                           Lưu

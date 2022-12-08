@@ -18,10 +18,10 @@ export const getOder = async (page, size, date, statusId, email) => {
     console.log(error);
   }
 };
-export const getOderAll = async (page, size, date, statusId) => {
+export const getOderAll = async (page, size, date, statusId, senderWardId) => {
   try {
     let res = await axios.get(
-      `/api/get-order-storage?&page=${page}&size=${size}&date=${date}&statusId=${statusId}`
+      `/api/get-order-storage?&page=${page}&size=${size}&date=${date}&statusId=${statusId}&senderWardId=${senderWardId}`
     );
     return res;
   } catch (error) {
@@ -47,10 +47,17 @@ export const getAllStorage = async () => {
     console.log(error);
   }
 };
-export const getOrderByStorage = async (page, size, storageId) => {
+export const getOrderByStorage = async (
+  page,
+  size,
+  storageId,
+  statusId,
+  wardId,
+  senderWardId
+) => {
   try {
     let res = await axios.get(
-      `/api/get-order-by-storage?page=${page}&size=${size}&storageId=${storageId}`
+      `/api/get-order-by-storage?page=${page}&size=${size}&storageId=${storageId}&statusId=${statusId}&wardId=${wardId}&senderWardId=${senderWardId}`
     );
     return res;
   } catch (error) {

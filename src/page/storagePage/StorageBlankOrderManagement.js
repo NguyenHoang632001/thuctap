@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PostmanInformationOrder from "../../postmanPage/PostmanInformationOrder";
 import {
   getAllStorage,
@@ -9,6 +9,10 @@ import {
 import { getDetailStorage } from "../../storageService.js/storageService";
 import Pagination from "@atlaskit/pagination";
 import StorageInformationOrder from "./StorageInformationOrder";
+import {
+  fetchDataFinished,
+  fetchDataStart,
+} from "../../redux/actions/appAction";
 function StorageBlankOrderManagement() {
   const [storageName, setStorageName] = useState("HỒ CHÍ MINH");
   const [addressStorage, setAddStorage] = useState("");
@@ -27,6 +31,12 @@ function StorageBlankOrderManagement() {
   const [storageOrder, setStorageOrder] = useState([]);
   const [toggle, setToggle] = useState(false);
   const storageId = useSelector((state) => state.user.userInfo.storageId);
+  const [valueToDisStatus, setValueToDisStatus] = useState("STORAGE");
+  const dispatch = useDispatch();
+  const statusOrderArr = [
+    { label: "Đơn Chuyển đi", value: "STORAGE" },
+    { label: "Đơn chuyển hoàn", value: "RESEND" },
+  ];
   console.log(storageId);
   console.log(toggle);
   const createPageArr = (pages) => {
@@ -50,13 +60,20 @@ function StorageBlankOrderManagement() {
     if (storageId) {
       orderStorage();
     }
-  }, [storageId, currentPage, toggle]);
+  }, [storageId, currentPage, toggle, valueToDisStatus]);
   let orderStorage = async () => {
+    dispatch(fetchDataStart());
     const pageSize = 8;
-    const data = await getOrderByStorage(currentPage, pageSize, storageId);
+    const data = await getOrderByStorage(
+      currentPage,
+      pageSize,
+      storageId,
+      valueToDisStatus
+    );
     setStorageOrder(data.data);
     setIsLoadingPagination(true);
     setTotalPages(Math.ceil(data.data.count / pageSize));
+    dispatch(fetchDataFinished());
   };
 
   //   console.log(storageId);
@@ -80,6 +97,28 @@ function StorageBlankOrderManagement() {
         <div>Địa chỉ :{addressStorage}</div>
       </div>
       <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 pt-[20px] ">
+        <div className=" flex justify-center mt-[50px]">
+          <div className="flex item-center justify-between  w-[20%] ">
+            {statusOrderArr.map((item, index) => {
+              {
+                return (
+                  <div className="" key={index}>
+                    <div onClick={() => setValueToDisStatus(item.value)}>
+                      <div className="hover:cursor-pointer">{item.label}</div>
+                      {valueToDisStatus === item.value ? (
+                        <button className="text-[red]">
+                          -------------------
+                        </button>
+                      ) : (
+                        <span></span>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+            })}
+          </div>
+        </div>
         <div className="flex item-center ">
           <h2 className="text-xl relative z-[-5]">QUẢN LÍ KHO</h2>
         </div>
@@ -97,7 +136,7 @@ function StorageBlankOrderManagement() {
               ></StorageInformationOrder>
               <div className="showPage mt-[20px] mb-[20px] ml-[auto] mf-[auto] text-center">
                 <span>
-                  Trang {currentPage}/{totalPages}
+                  Trang {totalPages === 0 ? 0 : currentPage}/{totalPages}
                 </span>
               </div>
               {isLoadingPagination && (

@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { useDispatch, useSelector } from "react-redux";
+import Modal from "react-modal";
 import {
   countPriceService,
   createOderService,
@@ -23,6 +24,7 @@ import { useDebounce } from "use-debounce";
 import { toast } from "react-toastify";
 import _ from "lodash";
 import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
+import { Link } from "react-router-dom";
 
 function CreateSingleBody() {
   const [nameMommodity, setNameMommodity] = useState("");
@@ -39,11 +41,11 @@ function CreateSingleBody() {
   const emailUser = useSelector((state) => state.user.userInfo.email);
   const [collectMoney, setCollectMoney] = useState(0);
   const [provinceArr, setProvinceArr] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState({});
   const [districtArr, setDistrictArr] = useState([]);
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState({});
   const [wardArr, setWardArr] = useState([]);
-  const [selectedWard, setSelectedWard] = useState("");
+  const [selectedWard, setSelectedWard] = useState({});
   const userInfo = useSelector((state) => state.user.userInfo);
   const [countprice, setCountPrice] = useState(0);
   const totalWeight = product.reduce((total, pro) => {
@@ -58,7 +60,12 @@ function CreateSingleBody() {
   const [totalValueDebounce] = useDebounce(totalValue, 1000);
   const [collectMoneyDebounce] = useDebounce(collectMoney, 1000);
   const [isPriceLoading, setIsPriceLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
+  const [onchangwward, setonchangewward] = useState("");
+  const [freightPayer, setFreightPayer] = useState("Người nhận");
+  const [note, setNote] = useState("");
 
   const data = {
     senderEmail: emailUser,
@@ -73,6 +80,9 @@ function CreateSingleBody() {
     districtId: selectedDistrict.value,
     wardId: selectedWard.value,
     price: countprice,
+    senderWardId: userInfo.wardData && userInfo.wardData.id,
+    freightPayer: freightPayer,
+    note: note,
   };
 
   const createOder = async () => {
@@ -86,7 +96,23 @@ function CreateSingleBody() {
     dispatch(fetchDataFinished());
   };
   const handleToSendOder = () => {
-    createOder();
+    setCheck(true);
+    if (
+      check === true &&
+      phoneNumber !== "" &&
+      fullName !== "" &&
+      address !== "" &&
+      Object.keys(selectedProvince).length !== 0 &&
+      Object.keys(selectedDistrict).length !== 0 &&
+      Object.keys(selectedWard).length !== 0 &&
+      codeMommodity !== "" &&
+      collectMoney !== "" &&
+      product.length !== 0
+    ) {
+      createOder();
+    } else {
+      alert("Hoàn thành form tạo đơn trước khi gửi");
+    }
   };
 
   const handleOnchangNameMommodity = (e) => {
@@ -94,26 +120,38 @@ function CreateSingleBody() {
   };
 
   const handleClick = () => {
-    if (index != null) {
-      handleDelte(index);
-      setIndex(null);
+    if (
+      kg !== "" &&
+      kg >= 0.1 &&
+      coute !== "" &&
+      coute >= 0.1 &&
+      price !== "" &&
+      price >= 0.1 &&
+      nameMommodity !== ""
+    ) {
+      if (index != null) {
+        handleDelte(index);
+        setIndex(null);
+      }
+
+      setProduct((pre) => [
+        ...pre,
+        {
+          name: nameMommodity,
+          amount: coute,
+          weight: kg,
+          value: price,
+        },
+      ]);
+      setStatus("Thêm hàng hóa");
+
+      setNameMommodity("");
+      setCoute("");
+      setKg("");
+      setPrice("");
+    } else {
+      alert("Thiếu hoặc sai thông tin");
     }
-
-    setProduct((pre) => [
-      ...pre,
-      {
-        name: nameMommodity,
-        amount: coute,
-        weight: kg,
-        value: price,
-      },
-    ]);
-    setStatus("Thêm hàng hóa");
-
-    setNameMommodity("");
-    setCoute("");
-    setKg("");
-    setPrice("");
   };
 
   const handleOnchangCoute = (e) => {
@@ -200,9 +238,10 @@ function CreateSingleBody() {
   };
 
   const handleCountPrice = async () => {
-    if (!userInfo.provinceData.id) {
+    if (!userInfo.provinceData || !userInfo.wardData) {
       toast.info("Cần cập nhật địa chỉ người dùng!");
     } else {
+      console.log(userInfo.provinceData);
       if (totalValue && totalWeight && !_.isEmpty(selectedProvince)) {
         setIsPriceLoading(true);
         let res =
@@ -222,13 +261,38 @@ function CreateSingleBody() {
                 collectMoney: collectMoneyDebounce,
               });
         if (res && res.errCode === 0) {
-          setCountPrice(res.totalPrice);
+          setCountPrice(res.totalPrice.toFixed(0));
         }
         setIsPriceLoading(false);
       }
     }
   };
-
+  let subtitle;
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+    },
+  };
+  function afterOpenModal() {
+    // references are now sync'd and can be accessed.
+    subtitle.style.color = "#f00";
+  }
+  const email = useSelector((state) => state.user.userInfo.email);
+  // const openToSendOrder = () => {
+  //   setOpenModal(true);
+  // };
+  const closeModal = () => {
+    setOpenModal(false);
+  };
+  const openModalToSend = () => {
+    setOpenModal(true);
+  };
+  const freightPayerArr = ["Người nhận", "Người gửi"];
   return (
     <>
       <div className="containerCreateSingleBody">
@@ -242,43 +306,49 @@ function CreateSingleBody() {
               </div>
               <div>
                 <div>
-                  Quản lí thông tin người gửi{" "}
+                  <Link to="/change-inforAccount">
+                    {" "}
+                    Quản lí thông tin người gửi{" "}
+                  </Link>
                   <FontAwesomeIcon icon={faArrowRight} />
                 </div>
               </div>
             </div>
-            <div className="mb-4">
-              <span>Người gửi</span>
-              <input
-                value={"Username"}
-                className="border-[1px] border-black"
-                readOnly
-              ></input>
-            </div>
-            <span className="text-[red]">Người gửi không được để trống</span>
+
+            <h2 className="text-[red] font-bold"> Thông tin người gửi</h2>
+            <div className="mt-[20px]">Email người gửi: {userInfo.email}</div>
           </div>
-          <div className="receive pl-[15%] ">
-            <div className="headerReceive">
-              <div className="itemHeaderReceives">
+          <div className="receive pl-[15%] pr-[10%]">
+            <div className="  flex items-center justify-center mt-[20px] mb-[20px]">
+              <div className="itemHeaderReceives ">
                 {" "}
                 <FontAwesomeIcon icon={faCloudArrowUp} />
                 <span className="itemHeaderReceive">NGƯỜI NHẬN</span>
               </div>
-              <div>
+              {/* <div>
                 <div>
                   <input type="checkbox"></input>
                   <span>Nhận hàng tại bưu cục</span>
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="bodyReceive mb-[20px]">
-              <div className="itemBodyReceive">
+              <div className="itemBodyReceive ">
                 <span className="ItemReceiveTitle"> Điện thoại</span>
                 <input
                   placeholder="Nhập số điện thoại "
                   className="inputReceive"
                   onChange={(e) => handlePhoneNumber(e)}
+                  type="number"
                 ></input>
+                {(phoneNumber === "" || phoneNumber.length !== 10) &&
+                check === true ? (
+                  <div className=" pl-[10px] text-[red]">
+                    Số điện thoại không đúng
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
 
               <div className="itemBodyReceive">
@@ -288,6 +358,13 @@ function CreateSingleBody() {
                   className="inputReceive"
                   onChange={(e) => handleFullName(e)}
                 ></input>
+                {fullName === "" && check === true ? (
+                  <div className=" pl-[10px] text-[red]">
+                    Họ tên không được để trống
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
               <div className="itemBodyReceive">
                 <span className="ItemReceiveTitle">Địa chỉ</span>
@@ -296,6 +373,13 @@ function CreateSingleBody() {
                   className="inputReceive"
                   onChange={(e) => handleAddress(e)}
                 ></input>
+                {address === "" && check === true ? (
+                  <div className=" pl-[10px] text-[red]">
+                    Địa chỉ không được để trống
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
             <div className=" ">
@@ -312,6 +396,14 @@ function CreateSingleBody() {
                     setSelectedDistrict({});
                   }}
                 />
+                {Object.keys(selectedProvince).length === 0 &&
+                check === true ? (
+                  <div className=" pl-[10px] text-[red]">
+                    Tỉnh không được để trống
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
               <div className="flex items-center justify-start mb-[20px]">
                 {" "}
@@ -325,6 +417,14 @@ function CreateSingleBody() {
                     setSelectedWard({});
                   }}
                 />
+                {Object.keys(selectedDistrict).length === 0 &&
+                check === true ? (
+                  <div className=" pl-[10px] text-[red]">
+                    Quận/huyện không được để trống
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
               <div className="flex items-center justify-start mb-[20px]">
                 {" "}
@@ -337,6 +437,13 @@ function CreateSingleBody() {
                     setSelectedWard(e);
                   }}
                 />
+                {Object.keys(selectedWard).length === 0 && check === true ? (
+                  <div className=" pl-[10px] text-[red]">
+                    Xã/phường không được để trống
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           </div>
@@ -346,10 +453,6 @@ function CreateSingleBody() {
             <div>
               <FontAwesomeIcon icon={faSitemap} />
               <span className="titleCommodity">THÔNG TIN HÀNG HÓA</span>
-            </div>
-            <div>
-              <span className="titleCommodity">Quản lí danh sách hàng hóa</span>
-              <FontAwesomeIcon icon={faArrowRight} />
             </div>
           </div>
           <div className="inputMommodity">
@@ -361,12 +464,23 @@ function CreateSingleBody() {
                 onChange={(e) => handleCodeMommodity(e)}
               ></input>
             </div>
+            <div>
+              {codeMommodity === "" && check === true ? (
+                <div className="pl-[45%] mt-[20px] text-[red]">
+                  Mã không được để trống
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
+
             <div className="">
-              <h2>Hàng hóa đã thêm</h2>
+              {/* <h2>Hàng hóa đã thêm</h2> */}
               {product.map((productItem, index) => {
                 return (
                   <div key={index} className="bg-slate-300 mb-2 mt-2">
                     <span>Tên hàng hóa: {productItem.name}</span>
+
                     <ul>
                       <li>Số lượng: {productItem.amount}</li>
                       <li>Trọng lượng: {productItem.weight}</li>
@@ -399,6 +513,15 @@ function CreateSingleBody() {
                   onChange={(e) => handleOnchangNameMommodity(e)}
                 ></input>
               </div>
+              {/* <div>
+                {nameMommodity === "" && check === true ? (
+                  <div className="pl-[45%] mt-[20px] text-[red]">
+                    Tên hàng hóa không được để trống
+                  </div>
+                ) : (
+                  ""
+                )}
+              </div> */}
               <div className="flex items-center justify-between mt-[20px] w-[100%] ">
                 <input
                   value={coute}
@@ -406,12 +529,14 @@ function CreateSingleBody() {
                   className="border-black border-[1px] border-solid mr-2 w-[30%] p-2"
                   onChange={(e) => handleOnchangCoute(e)}
                 ></input>
+
                 <input
                   value={kg}
-                  placeholder="Trọng lượng"
+                  placeholder="Trọng lượng gram"
                   className="border-black border-[1px] border-solid mr-2 w-[30%] p-2"
                   onChange={(e) => handleOnchangKg(e)}
                 ></input>
+
                 <input
                   value={price}
                   placeholder="Giá trị hàng hóa"
@@ -442,9 +567,10 @@ function CreateSingleBody() {
               <div>
                 <span>NGƯỜI TRẢ CƯỚC</span>
                 <div className="flex mt-4">
-                  <select>
-                    <option>Người gửi</option>
-                    <option>Người nhận</option>
+                  <select onChange={(e) => setFreightPayer(e.target.value)}>
+                    {freightPayerArr.map((item) => {
+                      return <option value={item}>{item}</option>;
+                    })}
                   </select>
                 </div>
               </div>
@@ -454,8 +580,26 @@ function CreateSingleBody() {
               <input
                 className="border-[1px] border-black ml-4"
                 onChange={(e) => setCollectMoney(e.target.value)}
+                type="number"
               ></input>{" "}
               (VND)
+            </div>
+
+            <div>
+              {collectMoney < 0 && check === true ? (
+                <div className=" mt-[20px] text-[red]">
+                  Tiền thu hộ không đúng
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
+            <div className="mt-4 ml-4">
+              <span>Note</span>
+              <textarea
+                className="border-[1px] border-black ml-14"
+                onChange={(e) => setNote(e.target.value)}
+              ></textarea>
             </div>
             <div className="mt-4 ml-4 flex justify-evenly">
               {/* <div>
@@ -489,30 +633,53 @@ function CreateSingleBody() {
           Tiền thu hộ
           <span className="mt-5">{collectMoney} VNĐ</span>
         </div>
-        <div className="item-footer-createSingleBody"></div>
-        <div className="item-footer-createSingleBody">Thời gian dự kiến</div>
+
         <div className="item-footer-createSingleBody-Agree flex-col pt-4">
-          <div>
-            <input type="checkbox" className="ml-2"></input>
-            <span className="ml-2">
-              Tôi đã đọc và đồng ý với điều khoản quy định
-            </span>
-          </div>
+          <div></div>
           <div className="mt-2">
             <button
-              className="border-[1px] border-black ml-4 p-2"
+              className="border-[1px] border-black ml-[40%] p-2"
+              // onClick={() => {
+              //   handleToSendOder();
+              // }}
               onClick={() => {
-                handleToSendOder();
+                openModalToSend();
               }}
             >
               Gửi ngay
             </button>
-            <button className="border-[1px] border-black ml-4 p-2">
+            <Modal
+              isOpen={openModal}
+              onAfterOpen={afterOpenModal}
+              onRequestClose={closeModal}
+              style={customStyles}
+              contentLabel="Example Modal"
+            >
+              <h2>Bạn có muốn hủy đơn hàng này không?</h2>
+              <div className="flex items-center justify-between ">
+                <button
+                  onClick={() => {
+                    handleToSendOder();
+                    closeModal();
+                  }}
+                  className="border-black border-solid border-[1px] p-[8px] bg-[blue] text-[white]  rounded-[5px]"
+                >
+                  Gửi đơn
+                </button>
+                <button
+                  className=" top-[20px] right-[20px]  p-[8px] bg-[red]  rounded-[5px] text-[white]"
+                  onClick={closeModal}
+                >
+                  Cancle
+                </button>
+              </div>
+            </Modal>
+            {/* <button className="border-[1px] border-black ml-4 p-2">
               Lưu nháp
             </button>
             <button className="border-[1px] border-black ml-4 p-2">
               làm mới
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

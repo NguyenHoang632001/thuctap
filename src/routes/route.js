@@ -41,6 +41,7 @@ const adminRoutes = [
 ];
 const postmanRoutes = [
   { path: "/", component: HomePage },
+  { path: "/change-inforAccount", component: ChangeInfoAccount },
   {
     path: "/postman-blanket-order-management",
     component: PostmanBlankOrderManagement,
@@ -50,6 +51,7 @@ const postmanRoutes = [
 ];
 const storageManager = [
   { path: "/", component: HomePage },
+  { path: "/change-inforAccount", component: ChangeInfoAccount },
   {
     path: "/storage-blanket-order-management",
     component: StorageBlankOrderManagement,

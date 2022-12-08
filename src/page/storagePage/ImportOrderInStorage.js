@@ -1,8 +1,12 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { matchPath } from "react-router-dom";
 import storage from "redux-persist/lib/storage";
+import {
+  fetchDataFinished,
+  fetchDataStart,
+} from "../../redux/actions/appAction";
 import {
   getOrderToImportStorage,
   searchByStorage,
@@ -21,6 +25,7 @@ function ImportOrderInStorage() {
   const [toggle, setToggle] = useState(true);
   const [word, setWord] = useState("");
   const [data, setData] = useState([]);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     getOrder();
@@ -31,22 +36,26 @@ function ImportOrderInStorage() {
     { title: "Đơn hàng gửi lên từ kho khác", modi: "TRANSPORT" },
   ];
   const getOrder = async () => {
+    dispatch(fetchDataStart());
     const data = await getOrderToImportStorage(1, 8, modi);
     setOrder(data.data.rows);
     setTotalPagesByPostman(Math.ceil(data.data.count / 8));
+    dispatch(fetchDataFinished());
   };
   const handleToSearch = () => {
     getSearchByStorage();
   };
   const getSearchByStorage = async () => {
+    dispatch(fetchDataStart());
     const data = await searchByStorage(word, 1, 8, modi);
     setOrder(data.data.rows);
     setTotalPagesByPostman(Math.ceil(data.data.count / 8));
-    console.log(data);
+    dispatch(fetchDataFinished());
   };
   return (
     <div>
       <div className="pt-[20px] pl-[20px] font-bold">CHUYỂN HÀNG VÀO KHO</div>
+
       <div class="flex items-center justify-center ">
         <div class="flex border-2 border-gray-200 rounded ">
           <input
@@ -81,6 +90,7 @@ function ImportOrderInStorage() {
         })}
       </div>
       <OrderByPostman
+        status={modi}
         data={order}
         totalPagesByPostman={totalPagesByPostman}
         toggle={toggle}

@@ -23,6 +23,7 @@ function CreateExcel() {
       "Tiền thu hộ": "200000",
     },
   ];
+  const userInfo = useSelector((state) => state.user.userInfo);
 
   const handleFile = async (e) => {
     const file = e.target.files[0];
@@ -87,6 +88,7 @@ function CreateExcel() {
         provinceId: addressArr[0],
         wardId: addressArr[2],
         districtId: addressArr[1],
+        senderWardid: userInfo.wardData && userInfo.wardData.id,
         commodityValue: comArr.reduce((total, com) => {
           return total + Number(com.value) * Number(com.amount);
         }, 0),
@@ -103,14 +105,18 @@ function CreateExcel() {
     bulkCreateOrder(data);
   };
   const bulkCreateOrder = async (data) => {
-    dispatch(fetchDataStart());
-    let res = await bulkCreateOrderService(data);
-    if (res && res.errCode === 0) {
-      toast.success("Đẩy đơn thành công!");
+    if (!userInfo.wardData) {
+      toast.info("Vui lòng cập nhật thông tin người dùng");
     } else {
-      toast.error("Đẩy đơn thất bại!");
+      dispatch(fetchDataStart());
+      let res = await bulkCreateOrderService(data);
+      if (res && res.errCode === 0) {
+        toast.success("Đẩy đơn thành công!");
+      } else {
+        toast.error("Đẩy đơn thất bại!");
+      }
+      dispatch(fetchDataFinished());
     }
-    dispatch(fetchDataFinished());
   };
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] bg-[#eeeeee]">
@@ -129,6 +135,33 @@ function CreateExcel() {
         >
           Đẩy đơn lên
         </button>
+      </div>
+      <div className="mt-[20px]">
+        Chú ý format trong file Excel:
+        <h2 className="pt-[10px] pb-[10px]">
+          Tỉnh thì T.Tên Tỉnh, ví dụ T.Bình Định
+        </h2>
+        <h2 className="pt-[10px] pb-[10px]">
+          Thành phố thì TP.Tên Thành Phố, ví dụ TP.Hồ Chí Minh
+        </h2>
+        <h2 className="pt-[10px] pb-[10px]">
+          Quận thì Q.Tên Quận, ví dụ Q.Bình Thạnh
+        </h2>
+        <h2 className="pt-[10px] pb-[10px]">
+          Huyện thì H.Tên Huyện, ví dụ H.phù Mỹ
+        </h2>
+        <h2 className="pt-[10px] pb-[10px]">Xã thì X.Tên Xã, ví dụ X.Mỹ Lộc</h2>
+        <h2 className="pt-[10px] pb-[10px]">
+          Phường thì P.Tên Phường, ví dụ P.26c
+        </h2>
+        <h2 className="text-[red]">Ghi vào file excel theo quy chuẩn sau:</h2>
+        <h2 className="pt-[10px] pb-[10px]">
+          Tỉnh/Thành Phố, Quận/Huyện, Xã/Phường, Đường,{" "}
+          <p className="font-bold pt-[10px] pb-[10px]">
+            ví dụ: TP.Hồ Chí Minh, Q.Bình Thạnh, P.26, Số 43 đường số 7 Bạch
+            Đằng
+          </p>
+        </h2>
       </div>
     </div>
   );

@@ -40,12 +40,14 @@ function StorageInformationOrder({ ...props }) {
   let subtitle;
   const [modalIsOpen, setIsOpen] = React.useState(false);
   const [modalIsOpenToChange, setIsOpenToChange] = React.useState(false);
+  const [sellectedItem, setSellectedItem] = useState("");
   const [allStotage, setAllStotage] = useState([]);
   const [chooseStorage, setChooseStorage] = useState("");
   const [idOrder, setIdOrder] = useState(0);
   const storageId = useSelector((state) => state.user.userInfo.storageId);
   const [toggle, setToggle] = useState(true);
-  function openModal() {
+  function openModal(item) {
+    setSellectedItem(item);
     setIsOpen(true);
   }
   const openModalToChange = (id) => {
@@ -85,6 +87,7 @@ function StorageInformationOrder({ ...props }) {
   };
   const handletoSaveChangeStorage = (id, storageId) => {
     changeStorage({ id: id, storageId: storageId });
+
     closeModalToChange();
   };
   console.log("chooseStorage", chooseStorage);
@@ -141,21 +144,19 @@ function StorageInformationOrder({ ...props }) {
 
                   <td>
                     <button
-                      onClick={openModal}
+                      onClick={() => openModal(item)}
                       className="ml-2 border-black border-solid border-[1px] p-1"
                     >
                       {" "}
                       Xem chi tiết
                     </button>
 
-                    {currentStatus == "STORAGE" && (
-                      <button
-                        className="ml-2 border-black border-solid border-[1px] p-1"
-                        onClick={() => openModalToChange(item.id)}
-                      >
-                        Chuyển kho
-                      </button>
-                    )}
+                    <button
+                      className="ml-2 border-black border-solid border-[1px] p-1"
+                      onClick={() => openModalToChange(item.id)}
+                    >
+                      Chuyển kho
+                    </button>
 
                     <Modal
                       isOpen={modalIsOpen}
@@ -164,39 +165,108 @@ function StorageInformationOrder({ ...props }) {
                       style={customStyles}
                       contentLabel="Example Modal"
                     >
-                      <div className="flex items-center justify-between w-[500px]">
+                      <div className="flex items-center justify-between w-full] ">
                         <h2
                           ref={(_subtitle) => (subtitle = _subtitle)}
                           className="text-[red]"
                         >
                           THÔNG TIN ĐƠN HÀNG
                         </h2>
-                        <button onClick={closeModal}>Close</button>
+                        <button onClick={closeModal} className="">
+                          Close
+                        </button>
                       </div>
                       <div className="mt-[20px]">
+                        <h2 className="text-[red] font-bold">
+                          {" "}
+                          Thông tin người gửi
+                        </h2>
+                        {console.log("sellectedItem,", sellectedItem)}
                         <div className="mt-[20px]">
-                          Mã đơn hàng {item.orderCode}
+                          Tên người gửi:{" "}
+                          {sellectedItem && sellectedItem.senderData.name}
+                        </div>
+                        <div className="mt-[20px]">
+                          Email người gửi:{" "}
+                          {sellectedItem && sellectedItem.senderData.email}
+                        </div>
+                        <div className="mt-[20px]">
+                          SDT người gửi:{" "}
+                          {sellectedItem &&
+                            sellectedItem.senderData.phoneNumber}
+                        </div>
+                        <div className="mt-[20px]">
+                          Địa chỉ người gửi: Tỉnh/thành phố{" "}
+                          {sellectedItem &&
+                            sellectedItem.senderData.provinceData.provinceName}
+                          ,quận/huyện{" "}
+                          {sellectedItem &&
+                            sellectedItem.senderData.districtData.districtName}
+                          ,xã/phường{" "}
+                          {sellectedItem &&
+                            sellectedItem.senderData.wardData.wardName}
+                          , {sellectedItem && sellectedItem.senderData.address}
                         </div>
 
+                        <h2 className="text-[red] font-bold mt-[20px]">
+                          {" "}
+                          Thông tin người nhận
+                        </h2>
                         <div className="mt-[20px]">
-                          Người gửi: {item.senderEmail}
+                          Mã đơn hàng :{" "}
+                          {sellectedItem && sellectedItem.orderCode}
                         </div>
                         <div className="mt-[20px]">
-                          Người nhận: {item.fullName}
+                          Tên người nhận :{" "}
+                          {sellectedItem && sellectedItem.fullName}
                         </div>
                         <div className="mt-[20px]">
-                          Email người nhận: {item.receiverEmail}
+                          SĐT người nhận :{" "}
+                          {sellectedItem && sellectedItem.phoneNumber}
                         </div>
                         <div className="mt-[20px]">
-                          Địa chỉ người nhận {item.address}
+                          Địa chỉ người nhận : Tỉnh/thành phố{" "}
+                          {sellectedItem && sellectedItem.province.provinceName}
+                          ,quận/huyện{" "}
+                          {sellectedItem && sellectedItem.district.districtName}
+                          ,xã/phường{" "}
+                          {sellectedItem && sellectedItem.ward.wardName},
+                          {sellectedItem && sellectedItem.address}
                         </div>
                         <div className="mt-[20px]">
-                          Nơi nhận hàng:{item.receivePlace}
+                          Tiền thu hộ :{" "}
+                          {sellectedItem &&
+                            sellectedItem.collectMoney.replace(
+                              /\B(?=(\d{3})+(?!\d))/g,
+                              ","
+                            )}{" "}
+                          VND
                         </div>
                         <div className="mt-[20px]">
-                          Thu hộ: {item.collectMoney}
+                          Tiền cước phí : {sellectedItem && sellectedItem.price}
+                          /Người trả phí:{" "}
+                          {sellectedItem && sellectedItem.freightPayer}
                         </div>
-                        <div className="mt-[20px]">Giá: {item.price}</div>
+
+                        <h2 className="text-[red] mt-[10px]">
+                          Thông tin đơn hàng
+                        </h2>
+                        {sellectedItem &&
+                          sellectedItem.commodityData.map((item, index) => {
+                            return (
+                              <div className="mt-[20px]" key={index}>
+                                <h3>
+                                  Tên hàng {index}: {item.name}
+                                </h3>
+                                <h3>Trọng lượng đơn hàng : {item.weight}</h3>
+                                <h3>Số lượng đơn hàng : {item.amount}</h3>
+                                <h3>
+                                  Giá trị đơn hàng : {item.value}
+                                  VNĐ
+                                </h3>
+                              </div>
+                            );
+                          })}
                       </div>
                     </Modal>
                   </td>
@@ -231,7 +301,7 @@ function StorageInformationOrder({ ...props }) {
                         </select>
                         <button
                           onClick={() => {
-                            handletoSaveChangeStorage(item.id, chooseStorage);
+                            handletoSaveChangeStorage(idOrder, chooseStorage);
                           }}
                         >
                           Lưu

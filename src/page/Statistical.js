@@ -127,7 +127,7 @@ function Statistical() {
   };
   const [itemNav, setItemNav] = useState([
     { title: "Thống kê" },
-    { title: "Dòng tiền" },
+    // { title: "Dòng tiền" },
   ]);
   const [active, setActive] = useState(0);
   const handleLick = (index) => {
@@ -206,9 +206,9 @@ function Statistical() {
           Tiền hàng theo trạng thái
         </div>
         <div className="mr-8 flex justify-between items-center">
-          <select className="h-8">
+          {/* <select className="h-8">
             <option>COD cước người nhận trả</option>
-          </select>
+          </select> */}
           <DatePicker
             selected={startDate}
             onSelect={new Date()} //when day is clicked

@@ -7,7 +7,7 @@ import Pagination from "@atlaskit/pagination";
 import { getAction, getOder } from "../services/userService";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import PostmanInformationOrder from "./PostmanInformationOrder";
 import {
@@ -17,6 +17,7 @@ import {
   getOrderByStorage,
 } from "../postmanService/postmanService";
 import getStorage from "redux-persist/es/storage/getStorage";
+import { fetchDataFinished, fetchDataStart } from "../redux/actions/appAction";
 
 function PostmanBlankOrderManagement() {
   // const [status, setStatus] = useState("");
@@ -32,8 +33,9 @@ function PostmanBlankOrderManagement() {
   const [storageId, setStorageId] = useState(1);
   const [storageOrder, setStorageOrder] = useState([]);
   const [toggle, setToggle] = useState(false);
-
-  console.log(toggle);
+  const [valueToDisStatus, setValueToDisStatus] = useState("STORAGE");
+  const dispatch = useDispatch();
+  const userInfo = useSelector((state) => state.user.userInfo);
   const createPageArr = (pages) => {
     let pageArr = [];
     for (let i = 1; i <= pages; i++) {
@@ -55,19 +57,49 @@ function PostmanBlankOrderManagement() {
     if (storageId) {
       orderStorage();
     }
-  }, [storageId, currentPage, toggle]);
+  }, [storageId, currentPage, toggle, valueToDisStatus]);
   let orderStorage = async () => {
+    dispatch(fetchDataStart());
     const pageSize = 8;
-    const data = await getOrderByStorage(currentPage, pageSize, storageId);
-    setStorageOrder(data.data);
-    setIsLoadingPagination(true);
-    setTotalPages(Math.ceil(data.data.count / pageSize));
+    if (valueToDisStatus === "RESEND") {
+      const data = await getOrderByStorage(
+        currentPage,
+        pageSize,
+        storageId,
+        valueToDisStatus,
+        userInfo.wardData.id,
+        userInfo.wardData.id
+      );
+      if (data && data.errCode === 0) {
+        setStorageOrder(data.data);
+        setIsLoadingPagination(true);
+        setTotalPages(Math.ceil(data.data.count / pageSize));
+      }
+    } else {
+      const data = await getOrderByStorage(
+        currentPage,
+        pageSize,
+        storageId,
+        valueToDisStatus,
+        userInfo.wardData.id
+      );
+      if (data && data.errCode === 0) {
+        setStorageOrder(data.data);
+        setIsLoadingPagination(true);
+        setTotalPages(Math.ceil(data.data.count / pageSize));
+      }
+    }
+    dispatch(fetchDataFinished());
   };
-
+  const statusOrderArr = [
+    { label: "Đơn Chuyển đi", value: "STORAGE" },
+    { label: "Đơn chuyển hoàn", value: "RESEND" },
+  ];
   return (
     <div className="w-[90%] mt-[0] mb-[0] ml-[auto] mr-[auto] pb-8 pt-[20px] ">
       <div className="flex item-center ">
         <h2 className="text-xl relative z-[-5]">QUẢN LÍ KHO</h2>
+
         <select
           className=" ml-[200px] w-[300px] bg-slate-500 text-[white]"
           onChange={(e) => setStorageId(e.target.value)}
@@ -80,15 +112,37 @@ function PostmanBlankOrderManagement() {
           ))}
         </select>
       </div>
+      <div className=" flex justify-center mt-[50px]">
+        <div className="flex item-center justify-between  w-[20%] ">
+          {console.log(valueToDisStatus)}
+          {statusOrderArr.map((item, index) => {
+            {
+              return (
+                <div className="" key={index}>
+                  <div onClick={() => setValueToDisStatus(item.value)}>
+                    <div className="hover:cursor-pointer">{item.label}</div>
+                    {valueToDisStatus === item.value ? (
+                      <button className="text-[red]">
+                        -------------------
+                      </button>
+                    ) : (
+                      <span></span>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+          })}
+        </div>
+      </div>
 
       <div className=" mt-8 ">
         <hr className="mt-4 h-[3px] w-full bg-red-700 "></hr>
-
         {totalPages > 0 ? (
           <div>
             <PostmanInformationOrder
               data={storageOrder}
-              status="STORAGE"
+              status={valueToDisStatus}
               toggle={toggle}
               setToggle={setToggle}
             ></PostmanInformationOrder>

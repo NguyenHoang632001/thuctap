@@ -27,7 +27,9 @@ function ChangeInfoAccount() {
     userInfo.address ? userInfo.address : ""
   );
   const [selectedProvince, setSellectedProvince] = useState(
-    userInfo.provinceData.id && userInfo.provinceData.provinceName
+    userInfo.provinceData &&
+      userInfo.provinceData.id &&
+      userInfo.provinceData.provinceName
       ? {
           value: userInfo.provinceData.id,
           label: userInfo.provinceData.provinceName,
@@ -35,7 +37,9 @@ function ChangeInfoAccount() {
       : {}
   );
   const [selectedDistrict, setSellectedDistrict] = useState(
-    userInfo.districtData.id && userInfo.districtData.districtName
+    userInfo.districtData &&
+      userInfo.districtData.id &&
+      userInfo.districtData.districtName
       ? {
           value: userInfo.districtData.id,
           label: userInfo.districtData.districtName,
@@ -43,7 +47,7 @@ function ChangeInfoAccount() {
       : {}
   );
   const [selectedWard, setSellectedWard] = useState(
-    userInfo.wardData.id && userInfo.wardData.wardName
+    userInfo.wardData && userInfo.wardData.id && userInfo.wardData.wardName
       ? {
           value: userInfo.wardData.id,
           label: userInfo.wardData.wardName,

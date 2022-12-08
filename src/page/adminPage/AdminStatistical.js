@@ -5,9 +5,13 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getChart } from "../../services/userService";
 import { getStatiscicalService } from "../../adminService.js/adminService";
+import {
+  fetchDataFinished,
+  fetchDataStart,
+} from "../../redux/actions/appAction";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -17,6 +21,7 @@ function AdminStatistical() {
   const [arrChart, setArrChart] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [arrToLoadTable, setArrToLoadTable] = useState([]);
+  const dispatch = useDispatch();
 
   let totalOrder = 0;
   let totalPrice = 0;
@@ -42,9 +47,9 @@ function AdminStatistical() {
     getDataChart();
   }, [startDate]);
   const getDataChart = async () => {
+    dispatch(fetchDataStart());
     let date = new Date(startDate).setHours(0, 0, 0, 0) / 1000;
     const data = await getStatiscicalService(date);
-    console.log("sdfsadafusser", data);
     setDataChart(data);
     setArrChart([
       data.cancelled.length,
@@ -120,6 +125,7 @@ function AdminStatistical() {
         price: data.wait.price,
       },
     ]);
+    dispatch(fetchDataFinished());
   };
   const [itemNav, setItemNav] = useState([
     { title: "Thống kê" },
@@ -202,9 +208,6 @@ function AdminStatistical() {
           Tiền hàng theo trạng thái
         </div>
         <div className="mr-8 flex justify-between items-center">
-          <select className="h-8">
-            <option>COD cước người nhận trả</option>
-          </select>
           <DatePicker
             selected={startDate}
             onSelect={new Date()} //when day is clicked

@@ -25,10 +25,16 @@ export const getOrderToImportStorage = async (page, size, statusId) => {
     console.log(error);
   }
 };
-export const searchByStorage = async (word, page, size, statusId) => {
+export const searchByStorage = async (
+  word,
+  page,
+  size,
+  statusId,
+  provinceId
+) => {
   try {
     let res = await axios.get(
-      `/api/search-order-by-storage?word=${word}&page=${page}&size=${size}&statusId=${statusId}`
+      `/api/search-order-by-storage?word=${word}&page=${page}&size=${size}&statusId=${statusId}&provinceId=${provinceId}`
     );
     return res;
   } catch (error) {
